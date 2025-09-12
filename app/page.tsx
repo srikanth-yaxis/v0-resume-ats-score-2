@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import SkillSelector from "@/components/skill-selector"
+import TitleSelector from "@/components/title-selector"
 
 const softwareSkills = [
   "JavaScript",
@@ -95,7 +96,7 @@ export default function YTPHomePage() {
 
   const getStepProgress = () => {
     const steps = [
-      "upload", 
+      "upload",
       "expertise",
       "visa-availability",
       "profile-1",
@@ -247,14 +248,14 @@ export default function YTPHomePage() {
                   currentStep === "expertise"
                     ? "border-primary bg-primary text-white"
                     : [
-                          "visa-availability",
-                          "profile-1",
-                          "profile-2",
-                          "odds-meter",
-                          "y-path",
-                          "review",
-                          "success",
-                        ].includes(currentStep)
+                      "visa-availability",
+                      "profile-1",
+                      "profile-2",
+                      "odds-meter",
+                      "y-path",
+                      "review",
+                      "success",
+                    ].includes(currentStep)
                       ? "border-primary bg-primary text-white"
                       : "border-gray-300",
                 )}
@@ -288,8 +289,8 @@ export default function YTPHomePage() {
                   currentStep === "visa-availability"
                     ? "border-primary bg-primary text-white"
                     : ["profile-1", "profile-2", "odds-meter", "y-path", "review", "success"].includes(
-                          currentStep,
-                        )
+                      currentStep,
+                    )
                       ? "border-primary bg-primary text-white"
                       : "border-gray-300",
                 )}
@@ -370,27 +371,15 @@ export default function YTPHomePage() {
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="avatar1-role">Professional Role/Title</Label>
-                      <Input
-                        id="avatar1-role"
-                        placeholder="e.g., Senior Salesforce Consultant, Java Developer"
-                        className="mt-1"
+                      <TitleSelector
+                        
+                        onChange={(titles) => {
+                          // titles: { id, name, experience? }[]
+                          console.log("Selected titles:", titles);
+                        }}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="avatar1-experience">Years of Experience</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1 bg-white">
-                          <SelectValue placeholder="Select experience" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0-2">0-2 years</SelectItem>
-                          <SelectItem value="3-5">3-5 years</SelectItem>
-                          <SelectItem value="6-10">6-10 years</SelectItem>
-                          <SelectItem value="10+">10+ years</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                        
                   </div>
                   <div className="mt-4">
                     <div className="mt-2">
