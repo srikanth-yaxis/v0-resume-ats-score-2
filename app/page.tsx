@@ -3,10 +3,10 @@
 import type React from "react"
 import ProfileSection1 from "@/components/profile-section-1"
 import ProfileSection2 from "@/components/profile-section-2"
-import { Upload, ExternalLink, User, CheckCircle, Target, Star, MapPin, Clock, Award, Briefcase } from "lucide-react"
+import { Upload, ExternalLink, User, CheckCircle, Target, Star, MapPin, Clock } from "lucide-react"
 import Image from "next/image"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -16,6 +16,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import SkillSelector from "@/components/skill-selector"
+
+const softwareSkills = [
+  "JavaScript",
+  "Python",
+  "Java",
+  "C#",
+  "C++",
+  "TypeScript",
+  "React.js",
+  "Node.js",
+  "Express.js",
+  "Next.js",
+  "MongoDB",
+  "SQL",
+  "HTML",
+  "CSS",
+  "Git",
+  "Docker",
+  "Kubernetes",
+  "AWS",
+  "REST APIs",
+  "Agile Methodologies"
+].slice(0, 20);
+
 
 export default function YTPHomePage() {
   const [currentStep, setCurrentStep] = useState<
@@ -28,7 +53,7 @@ export default function YTPHomePage() {
     | "y-path"
     | "review"
     | "success"
-  >("expertise")
+  >("upload")
 
   const [expertiseData, setExpertiseData] = useState<any>({
     avatar1: { role: "", experience: "", skills: [] },
@@ -45,12 +70,34 @@ export default function YTPHomePage() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [profileData, setProfileData] = useState<any>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const uploadIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const [carouselIndex, setCarouselIndex] = useState(0)
+  const carouselIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const resumeTips = [
+    "Analyzing keywords in your resume…",
+    "Scanning work experience for impact verbs…",
+    "Checking formatting and structure…",
+    "Assessing ATS compatibility…",
+    "Extracting skills and certifications…",
+    "Matching your profile to roles…",
+    "Highlighting measurable achievements…",
+    "Detecting duplicate or weak bullets…",
+    "Normalizing job titles and dates…",
+    "Cross-referencing skills with market demand…",
+    "Optimizing section order for readability…",
+    "Identifying gaps and recommending upskilling…",
+    "Comparing against top-performing resumes…",
+    "Suggesting stronger action verbs…",
+    "Reviewing summary for clarity and focus…",
+  ]
 
   const getStepProgress = () => {
     const steps = [
+      "upload", 
       "expertise",
       "visa-availability",
-      "upload",
       "profile-1",
       "profile-2",
       "odds-meter",
@@ -64,9 +111,36 @@ export default function YTPHomePage() {
 
   const handleFileUpload = (file: File) => {
     setUploadedFile(file)
-    setTimeout(() => {
-      setCurrentStep("profile-1")
-    }, 1500)
+    if (uploadIntervalRef.current) {
+      clearInterval(uploadIntervalRef.current)
+    }
+    setIsUploading(true)
+    setUploadProgress(0)
+    if (carouselIntervalRef.current) {
+      clearInterval(carouselIntervalRef.current)
+    }
+    setCarouselIndex(0)
+    carouselIntervalRef.current = setInterval(() => {
+      setCarouselIndex((prev) => (prev + 1) % resumeTips.length)
+    }, 1000)
+
+    const durationMs = 5000
+    const steps = 30
+    const stepMs = durationMs / steps
+    let tick = 0
+    uploadIntervalRef.current = setInterval(() => {
+      tick += 1
+      const next = Math.min(100, Math.round((tick / steps) * 100))
+      setUploadProgress(next)
+      if (tick >= steps) {
+        if (uploadIntervalRef.current) clearInterval(uploadIntervalRef.current)
+        uploadIntervalRef.current = null
+        if (carouselIntervalRef.current) clearInterval(carouselIntervalRef.current)
+        carouselIntervalRef.current = null
+        setIsUploading(false)
+        setCurrentStep("expertise")
+      }
+    }, stepMs)
   }
 
   const handleDrop = (e: React.DragEvent) => {
@@ -92,7 +166,7 @@ export default function YTPHomePage() {
 
   const handleVisaComplete = (data: any) => {
     setVisaData(data)
-    setCurrentStep("upload")
+    setCurrentStep("profile-1")
   }
 
   const handleProfileSection1Complete = (data: any) => {
@@ -139,76 +213,6 @@ export default function YTPHomePage() {
             <div
               className={cn(
                 "flex items-center space-x-2",
-                currentStep === "expertise" ? "text-primary scale-105" : "text-muted-foreground",
-              )}
-            >
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center border-2",
-                  currentStep === "expertise"
-                    ? "border-primary bg-primary text-white"
-                    : [
-                          "visa-availability",
-                          "upload",
-                          "profile-1",
-                          "profile-2",
-                          "odds-meter",
-                          "y-path",
-                          "review",
-                          "success",
-                        ].includes(currentStep)
-                      ? "border-primary bg-primary text-white"
-                      : "border-gray-300",
-                )}
-              >
-                {[
-                  "visa-availability",
-                  "upload",
-                  "profile-1",
-                  "profile-2",
-                  "odds-meter",
-                  "y-path",
-                  "review",
-                  "success",
-                ].includes(currentStep) ? (
-                  <CheckCircle className="w-4 h-4" />
-                ) : (
-                  "1"
-                )}
-              </div>
-              <span className="font-semibold">Expertise</span>
-            </div>
-            <div
-              className={cn(
-                "flex items-center space-x-2",
-                currentStep === "visa-availability" ? "text-primary scale-105" : "text-muted-foreground",
-              )}
-            >
-              <div
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center border-2",
-                  currentStep === "visa-availability"
-                    ? "border-primary bg-primary text-white"
-                    : ["upload", "profile-1", "profile-2", "odds-meter", "y-path", "review", "success"].includes(
-                          currentStep,
-                        )
-                      ? "border-primary bg-primary text-white"
-                      : "border-gray-300",
-                )}
-              >
-                {["upload", "profile-1", "profile-2", "odds-meter", "y-path", "review", "success"].includes(
-                  currentStep,
-                ) ? (
-                  <CheckCircle className="w-4 h-4" />
-                ) : (
-                  "2"
-                )}
-              </div>
-              <span className="font-semibold">Visa & Location</span>
-            </div>
-            <div
-              className={cn(
-                "flex items-center space-x-2",
                 currentStep === "upload" ? "text-primary scale-105" : "text-muted-foreground",
               )}
             >
@@ -225,10 +229,78 @@ export default function YTPHomePage() {
                 {["profile-1", "profile-2", "odds-meter", "y-path", "review", "success"].includes(currentStep) ? (
                   <CheckCircle className="w-4 h-4" />
                 ) : (
-                  "3"
+                  "1"
                 )}
               </div>
               <span className="font-semibold">Resume</span>
+            </div>
+            {/* Expertise (now second) */}
+            <div
+              className={cn(
+                "flex items-center space-x-2",
+                currentStep === "expertise" ? "text-primary scale-105" : "text-muted-foreground",
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center border-2",
+                  currentStep === "expertise"
+                    ? "border-primary bg-primary text-white"
+                    : [
+                          "visa-availability",
+                          "profile-1",
+                          "profile-2",
+                          "odds-meter",
+                          "y-path",
+                          "review",
+                          "success",
+                        ].includes(currentStep)
+                      ? "border-primary bg-primary text-white"
+                      : "border-gray-300",
+                )}
+              >
+                {[
+                  "visa-availability",
+                  "profile-1",
+                  "profile-2",
+                  "odds-meter",
+                  "y-path",
+                  "review",
+                  "success",
+                ].includes(currentStep) ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  "2"
+                )}
+              </div>
+              <span className="font-semibold">Expertise</span>
+            </div>
+            {/* Visa & Location (now third) */}
+            <div
+              className={cn(
+                "flex items-center space-x-2",
+                currentStep === "visa-availability" ? "text-primary scale-105" : "text-muted-foreground",
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center border-2",
+                  currentStep === "visa-availability"
+                    ? "border-primary bg-primary text-white"
+                    : ["profile-1", "profile-2", "odds-meter", "y-path", "review", "success"].includes(
+                          currentStep,
+                        )
+                      ? "border-primary bg-primary text-white"
+                      : "border-gray-300",
+                )}
+              >
+                {["profile-1", "profile-2", "odds-meter", "y-path", "review", "success"].includes(currentStep) ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  "3"
+                )}
+              </div>
+              <span className="font-semibold">Visa & Location</span>
             </div>
             <div
               className={cn(
@@ -289,11 +361,11 @@ export default function YTPHomePage() {
             </CardHeader>
             <CardContent className="pb-12">
               <div className="space-y-8 max-w-3xl mx-auto">
-                {/* Avatar 1 - Primary */}
+                {/*Primary Skills*/}
                 <div className="border-2 border-primary/20 rounded-xl p-6 bg-primary/5">
                   <div className="flex items-center mb-4">
                     <Star className="w-5 h-5 text-primary mr-2" />
-                    <h3 className="text-xl font-semibold text-gray-900">Avatar 1 - Primary Expertise</h3>
+                    <h3 className="text-xl font-semibold text-gray-900">Your Primary Expertise</h3>
                     <Badge className="ml-2 bg-primary">PRIORITY</Badge>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
@@ -321,72 +393,34 @@ export default function YTPHomePage() {
                     </div>
                   </div>
                   <div className="mt-4">
-                    <Label htmlFor="avatar1-skills">Core Skills & Technologies</Label>
-                    <Textarea
-                      id="avatar1-skills"
-                      placeholder="List your key skills, technologies, certifications..."
-                      className="mt-1"
-                      rows={3}
-                    />
-                  </div>
-                </div>
-
-                {/* Avatar 2 - Secondary */}
-                <div className="border rounded-xl p-6">
-                  <div className="flex items-center mb-4">
-                    <Briefcase className="w-5 h-5 text-gray-600 mr-2" />
-                    <h3 className="text-lg font-semibold">Avatar 2 - Secondary Expertise (Optional)</h3>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="avatar2-role">Professional Role/Title</Label>
-                      <Input id="avatar2-role" placeholder="e.g., Project Manager, Business Analyst" className="mt-1" />
-                    </div>
-                    <div>
-                      <Label htmlFor="avatar2-experience">Years of Experience</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1 bg-white">
-                          <SelectValue placeholder="Select experience" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0-2">0-2 years</SelectItem>
-                          <SelectItem value="3-5">3-5 years</SelectItem>
-                          <SelectItem value="6-10">6-10 years</SelectItem>
-                          <SelectItem value="10+">10+ years</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="mt-2">
+                      <SkillSelector
+                        placeholder="Search and add primary skills"
+                        className=""
+                        seedItems={softwareSkills.map((name, i) => ({ id: String(i), name }))}
+                        onChangeBoth={(primary, secondary) => {
+                          setExpertiseData((prev: any) => ({
+                            ...prev,
+                            avatar1: {
+                              ...prev.avatar1,
+                              skills: primary.map((s) => ({ name: s.name, years: s.years ?? 0, proficiency: s.proficiency || "Novice" })),
+                              secondarySkills: secondary.map((s) => ({ name: s.name, years: s.years ?? 0, proficiency: s.proficiency || "Novice" })),
+                            },
+                          }))
+                        }}
+                        onCertChange={(cert) => {
+                          setExpertiseData((prev: any) => ({
+                            ...prev,
+                            avatar1: {
+                              ...prev.avatar1,
+                              certification: cert,
+                            },
+                          }))
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
-
-                {/* Avatar 3 - Tertiary */}
-                <div className="border rounded-xl p-6">
-                  <div className="flex items-center mb-4">
-                    <Award className="w-5 h-5 text-gray-600 mr-2" />
-                    <h3 className="text-lg font-semibold">Avatar 3 - Additional Skills (Optional)</h3>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="avatar3-role">Professional Role/Title</Label>
-                      <Input id="avatar3-role" placeholder="e.g., Data Analyst, Technical Writer" className="mt-1" />
-                    </div>
-                    <div>
-                      <Label htmlFor="avatar3-experience">Years of Experience</Label>
-                      <Select>
-                        <SelectTrigger className="mt-1 bg-white">
-                          <SelectValue placeholder="Select experience" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="0-2">0-2 years</SelectItem>
-                          <SelectItem value="3-5">3-5 years</SelectItem>
-                          <SelectItem value="6-10">6-10 years</SelectItem>
-                          <SelectItem value="10+">10+ years</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="text-center">
                   <Button size="lg" onClick={() => handleExpertiseComplete(expertiseData)} className="hover-lift">
                     Continue to Visa & Availability
@@ -481,7 +515,7 @@ export default function YTPHomePage() {
 
                 <div className="text-center">
                   <Button size="lg" onClick={() => handleVisaComplete(visaData)} className="hover-lift">
-                    Continue to Resume Upload
+                    Continue to Profile
                   </Button>
                 </div>
               </div>
@@ -489,14 +523,13 @@ export default function YTPHomePage() {
           </Card>
         )}
 
-        {/* Resume Upload - moved to step 3 */}
+        {/* Resume Upload - now step 1 */}
         {currentStep === "upload" && (
           <Card className="mb-12 hover-lift animate-slide-up shadow-lg border-0">
             <CardHeader className="text-center pb-8 pt-12">
               <CardTitle className="text-3xl text-balance mb-4 text-gray-900">Upload Your Resume</CardTitle>
               <CardDescription className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Now that we know your expertise and availability, let's analyze your resume to complete your
-                professional profile
+                Start by uploading your resume. We'll use it to tailor the next steps of your profile.
               </CardDescription>
             </CardHeader>
             <CardContent className="pb-12">
@@ -513,16 +546,42 @@ export default function YTPHomePage() {
                 }}
                 onDragLeave={() => setIsDragOver(false)}
               >
-                <Upload className="w-16 h-16 mx-auto mb-6 text-gray-400" />
-                <h3 className="text-xl font-semibold mb-3 text-gray-900">Drop your resume here</h3>
-                <p className="text-gray-600 mb-6">or click to browse files</p>
-                <input type="file" accept=".pdf" onChange={handleFileSelect} className="hidden" id="resume-upload" />
-                <label htmlFor="resume-upload">
-                  <Button asChild size="lg" className="hover-lift">
-                    <span>Choose File</span>
-                  </Button>
-                </label>
-                <p className="text-sm text-gray-500 mt-4">PDF files only, max 10MB</p>
+                {!isUploading ? (
+                  <>
+                    <Upload className="w-16 h-16 mx-auto mb-6 text-gray-400" />
+                    <h3 className="text-xl font-semibold mb-3 text-gray-900">Drop your resume here</h3>
+                    <p className="text-gray-600 mb-6">or click to browse files</p>
+                    <input type="file" accept=".pdf" onChange={handleFileSelect} className="hidden" id="resume-upload" />
+                    <label htmlFor="resume-upload">
+                      <Button asChild size="lg" className="hover-lift">
+                        <span>Choose File</span>
+                      </Button>
+                    </label>
+                    <p className="text-sm text-gray-500 mt-4">PDF files only, max 10MB</p>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-left max-w-md mx-auto">
+                      <div className="h-20 overflow-hidden rounded-md bg-white/70 border border-gray-200 flex items-center justify-center">
+                        <div className="text-sm text-gray-700 px-4 text-center">
+                          {resumeTips[carouselIndex]}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-6 text-left max-w-md mx-auto">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-700">Uploading…</span>
+                        <span className="text-sm text-gray-700">{uploadProgress}%</span>
+                      </div>
+                      <div className="h-3 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-100 ease-linear"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
