@@ -4,9 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 type TitleItem = { id: string; name: string };
-type SelectedTitle = { id: string; name: string; experience?: "0-2" | "3-5" | "6-10" | "10+" };
-
-const LIGHTCAST_TOKEN = "Bearer <YOUR_TOKEN_HERE>"; // ← put your token here (client-side is ok for quick tests; prefer server-side in production)
+type SelectedTitle = { id: string; name: string; experience?: "0-1" | "1-2" | "2-3" | "3-4" | "4-5" | "5-6" | "6-7" | "7-8" | "8-9" | "10+" };
 
 function useDebouncedValue<T>(value: T, delayMs = 350) {
   const [debounced, setDebounced] = useState(value);
@@ -24,12 +22,12 @@ export interface TitleSelectorProps {
   page?: number;
   placeholder?: string;
   className?: string;
-  onChange?: (titles: SelectedTitle[]) => void;
+  onChange?: (title: SelectedTitle | null) => void;
 }
 
 const API_BASE = "https://emsiservices.com/titles/versions/latest/titles";
 
-export default function TitleSelector({                // ← uses the token variable by default
+export default function TitleSelector({                
   minChars = 2,
   limit = 20,
   page = 1,
@@ -42,13 +40,13 @@ export default function TitleSelector({                // ← uses the token var
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<TitleItem[]>([]);
-  const [selected, setSelected] = useState<SelectedTitle[]>([]);
+  const [selected, setSelected] = useState<SelectedTitle | null>(null);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const lastQueryRef = useRef<string | null>(null);
 
-  const token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNDNjZCRjIzMjBGNkY4RDQ2QzJERDhCMjI0MEVGMTFENTZEQkY3MUYiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJQR2FfSXlEMi1OUnNMZGl5SkE3eEhWYmI5eDgifQ.eyJuYmYiOjE3NTc2ODMzMjYsImV4cCI6MTc1NzY4NjkyNiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20iLCJhdWQiOlsiZW1zaV9vcGVuIiwiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20vcmVzb3VyY2VzIl0sImNsaWVudF9pZCI6ImNlZXRveGR5YWxmOGZxNzUiLCJuYW1lIjoiUmFtZXNoIERlc2giLCJjb21wYW55IjoiRGVzaCIsImVtYWlsIjoicmFtZXNod2FyYW0xMkB5b3BtYWlsLmNvbSIsImlhdCI6MTc1NzY4MzMyNiwic2NvcGUiOlsiZW1zaV9vcGVuIl19.wx9bAZV747s8oAXHyI9DB7H8eN4EveH_MdlbHRWipzknI-konMZnedQ_H6VcYr3xCNf247yvvBRFnWGgm-n_7qx1BV1Yybc3_h8_HJrhljo1fZk_En1elUmGvx1HbJoBgTpl9iFuuXBWy7fJROUlIX59ImozhJ6gb7lSmaPvx70Rj2GIQsm3GHn10cOT0Ql-i6bHzwzt9lJ2kLZzKQh6a-X0S3iR211XFUVicwAZb_L0fYNxGvEiV_79uwD_Bhp0UcDrb5S5pp5sashBrwa61YSgO0_2dBDh4awLAPX60ibYSXzT43lGWxsQiiUOUUSZFpkM5QqL9st2WhCrWaaLIw"
+  const token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNDNjZCRjIzMjBGNkY4RDQ2QzJERDhCMjI0MEVGMTFENTZEQkY3MUYiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJQR2FfSXlEMi1OUnNMZGl5SkE3eEhWYmI5eDgifQ.eyJuYmYiOjE3NTc5MTU1MDUsImV4cCI6MTc1NzkxOTEwNSwiaXNzIjoiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20iLCJhdWQiOlsiZW1zaV9vcGVuIiwiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20vcmVzb3VyY2VzIl0sImNsaWVudF9pZCI6ImNlZXRveGR5YWxmOGZxNzUiLCJuYW1lIjoiUmFtZXNoIERlc2giLCJjb21wYW55IjoiRGVzaCIsImVtYWlsIjoicmFtZXNod2FyYW0xMkB5b3BtYWlsLmNvbSIsImlhdCI6MTc1NzkxNTUwNSwic2NvcGUiOlsiZW1zaV9vcGVuIl19.vT30bhN0i_cq-0f8-gujNJzDuo2HN82pzdt_1NyiOkDOJfvlFAP0xAXsaC095_TGtUE9DMe1GLqTlyrOjVL-zuq_DlR3UZGkLyiPucCQpYVROzvVANl6DsjQXgT9GAgfUYoaf7yuqrFyPlSmDiWXdZen23ZtiA6Tyx8HI4fu5ezOqXJ_SgEtcWMcWlfFZoef5kO92SEkTefqSjmLMt1DHTbR_EseAdCt2mL7suMjtWwq8jzKiYevx6OUkm6Lw-hHGqI_LFa-kLHSBKmcX4X1RzMM2Y3fhSea6wJZrIeu1Hl_UiExerRBZgBZiLD2gcoUU4zSOPxqRHk9OF5Xi5L5jA"
 
   const authHeader = useMemo(() => {
     if (!token) return "";
@@ -121,129 +119,133 @@ export default function TitleSelector({                // ← uses the token var
     fetchTitles(debouncedQuery);
   }, [debouncedQuery, minChars, fetchTitles]);
 
-  const addTitle = useCallback(
+  const selectTitle = useCallback(
     (item: TitleItem) => {
-      setSelected((prev) => {
-        if (prev.some((t) => t.id === item.id)) return prev;
-        const next = [...prev, { ...item }];
-        onChange?.(next);
-        return next;
-      });
+      const newSelected = { ...item };
+      setSelected(newSelected);
+      onChange?.(newSelected);
       setQuery("");
       setSuggestions([]);
       setOpen(false);
-      requestAnimationFrame(() => inputRef.current?.focus());
     },
     [onChange],
   );
 
-  const removeTitle = useCallback(
-    (id: string) => {
-      setSelected((prev) => {
-        const next = prev.filter((t) => t.id !== id);
-        onChange?.(next);
-        return next;
-      });
-      requestAnimationFrame(() => inputRef.current?.focus());
-    },
-    [onChange],
-  );
+  const removeTitle = useCallback(() => {
+    setSelected(null);
+    onChange?.(null);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, [onChange]);
 
   const setExperience = useCallback(
-    (id: string, experience: SelectedTitle["experience"]) => {
-      setSelected((prev) => {
-        const next = prev.map((t) => (t.id === id ? { ...t, experience } : t));
-        onChange?.(next);
-        return next;
-      });
+    (experience: SelectedTitle["experience"]) => {
+      if (selected) {
+        const updated = { ...selected, experience };
+        setSelected(updated);
+        onChange?.(updated);
+      }
     },
-    [onChange],
+    [selected, onChange],
   );
 
+  const editTitle = useCallback(() => {
+    setSelected(null);
+    onChange?.(null);
+    setQuery("");
+    setSuggestions([]);
+    setOpen(false);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }, [onChange]);
+
   return (
-    <div className={`w-[720px] max-w-full ${className}`}> {/* ← wider wrapper */}
+    <div className={`w-full max-w-2xl mt-5`}>
       <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
 
-      <div className="relative w-full"> {/* input + dropdown will both span 720px */}
-        <input
-          ref={inputRef}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          placeholder={placeholder}
-          className="w-full rounded-2xl border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      {!selected ? (
+        <div className="relative w-full max-w-[720px]">
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            placeholder={placeholder}
+            className="w-full rounded-2xl border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-[#e44126]"
+          />
 
-        {open && (
-          <div className="absolute z-20 mt-1 w-full rounded-xl border border-gray-200 bg-white shadow-lg">
-            {isLoading ? (
-              <div className="p-3 text-sm text-gray-500">Searching…</div>
-            ) : error ? (
-              <div className="p-3 text-sm text-red-600">{error}</div>
-            ) : suggestions.length === 0 && debouncedQuery.length >= minChars ? (
-              <div className="p-3 text-sm text-gray-500">No results</div>
-            ) : (
-              <ul role="listbox" className="max-h-72 overflow-auto py-1">
-                {suggestions.map((item) => (
-                  <li
-                    key={item.id}
-                    role="option"
-                    aria-selected={false}
-                    className="cursor-pointer px-4 py-2 hover:bg-indigo-50"
-                    onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => addTitle(item)}
-                    title={item.name}
-                  >
-                    {item.name}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        )}
-      </div>
-
-      {selected.length > 0 && (
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {selected.map((t) => (
-            <div key={t.id} className="w-full max-w-xl rounded-xl bg-white border border-indigo-200 shadow-sm p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-indigo-900">{t.name}</span>
+          {open && (
+            <div className="absolute z-20 mt-1 w-full rounded-xl border border-gray-200 bg-white shadow-lg">
+              {isLoading ? (
+                <div className="p-3 text-sm text-gray-500">Searching…</div>
+              ) : error ? (
+                <div className="p-3 text-sm text-red-600">{error}</div>
+              ) : suggestions.length === 0 && debouncedQuery.length >= minChars ? (
+                <div className="p-3 text-sm text-gray-500">No results</div>
+              ) : (
+                <ul role="listbox" className="max-h-72 overflow-auto py-1">
+                  {suggestions.map((item) => (
+                    <li
+                      key={item.id}
+                      role="option"
+                      aria-selected={false}
+                      className="cursor-pointer px-4 py-2 hover:bg-[#e44126]/10"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => selectTitle(item)}
+                      title={item.name}
+                    >
+                      {item.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex gap-4 w-full">
+          {/* Title Card */}
+          <div className="flex-1 max-w-4xl rounded-xl bg-gradient-to-br from-white to-[#e44126]/5 border-2 border-[#e44126]/20 shadow-xl p-8">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xl font-bold text-[#e44126] mb-1 truncate" title={selected.name}>
+                  {selected.name}
+                </h3>
+                <p className="text-sm text-[#e44126]/70 font-medium">Selected Job Title</p>
+              </div>
+              <div className="ml-4">
                 <button
                   type="button"
-                  className="rounded-full border border-indigo-300 px-2 text-xs text-indigo-700 hover:bg-indigo-50"
-                  onClick={() => removeTitle(t.id)}
-                  onMouseDown={(e) => e.preventDefault()}
-                  aria-label={`Remove ${t.name}`}
-                  title="Remove"
+                  className="rounded-lg border-2 border-[#e44126]/30 px-4 py-2 text-sm font-medium text-[#e44126] hover:bg-[#e44126]/10 hover:border-[#e44126]/50 transition-all duration-200 shadow-sm"
+                  onClick={removeTitle}
+                  aria-label={`Remove ${selected.name}`}
+                  title="Remove title"
                 >
-                  ×
+                  Remove
                 </button>
               </div>
-
-              <div className="mt-3">
-                <label className="block text-[13px] text-indigo-700 mb-1">
-                  Years of experience in this title
-                </label>
-                <Select
-                  value={t.experience}
-                  onValueChange={(val) => setExperience(t.id, val as SelectedTitle["experience"])}
-                >
-                  <SelectTrigger className="w-full h-9 rounded-md border border-indigo-200 bg-white px-3 text-sm text-indigo-900">
-                    <SelectValue placeholder="Select years" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-2">0-2 years</SelectItem>
-                    <SelectItem value="3-5">3-5 years</SelectItem>
-                    <SelectItem value="6-10">6-10 years</SelectItem>
-                    <SelectItem value="10+">10+ years</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
-          ))}
+
+            <div className="max-w-lg">
+              <label className="block text-sm font-semibold text-gray-700 mb-4">
+                Years of experience in this title
+              </label>
+              <Select
+                value={selected.experience}
+                onValueChange={(val) => setExperience(val as SelectedTitle["experience"])}
+              >
+                <SelectTrigger className="w-full h-14 rounded-xl border-2 border-orange-200/80 bg-white px-5 text-base text-gray-800 font-medium focus:ring-3 focus:ring-[#e44126]/30 focus:border-[#e44126]/60 shadow-sm hover:border-orange-300/80 transition-all duration-200">
+                  <SelectValue placeholder="Select years of experience" />
+                </SelectTrigger>
+                <SelectContent className="border-orange-200/80 shadow-xl">
+                  <SelectItem value="0-2" className="hover:bg-orange-50/80 focus:bg-orange-50/80 py-3">0-2 years</SelectItem>
+                  <SelectItem value="3-5" className="hover:bg-orange-50/80 focus:bg-orange-50/80 py-3">3-5 years</SelectItem>
+                  <SelectItem value="6-10" className="hover:bg-orange-50/80 focus:bg-orange-50/80 py-3">6-10 years</SelectItem>
+                  <SelectItem value="10+" className="hover:bg-orange-50/80 focus:bg-orange-50/80 py-3">10+ years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       )}
     </div>

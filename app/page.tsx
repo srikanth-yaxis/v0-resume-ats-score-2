@@ -360,26 +360,41 @@ export default function YTPHomePage() {
                 lead with your strongest professional identity.
               </CardDescription>
             </CardHeader>
+
             <CardContent className="pb-12">
               <div className="space-y-8 max-w-3xl mx-auto">
                 {/*Primary Skills*/}
                 <div className="border-2 border-primary/20 rounded-xl p-6 bg-primary/5">
                   <div className="flex items-center mb-4">
                     <Star className="w-5 h-5 text-primary mr-2" />
-                    <h3 className="text-xl font-semibold text-gray-900">Your Primary Expertise</h3>
-                    <Badge className="ml-2 bg-primary">PRIORITY</Badge>
+                    <h3 className="text-xl font-semibold text-gray-900">Your Expertise</h3>
+                  </div>
+                  <div className="w-full max-w-2xl rounded-xl bg-gradient-to-br from-orange-50 to-red-50 border border-[#e44126]/20 shadow-lg p-8">
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-[#e44126] mb-3">Your ATS Score</h3>
+                      <div className="flex items-center justify-center mb-4">
+                        <div className="text-5xl font-bold text-[#e44126]">85</div>
+                        <div className="text-xl text-[#e44126]/70 ml-1">/100</div>
+                      </div>
+                      <div className="w-full bg-[#e44126]/10 rounded-full h-4 mb-4">
+                        <div
+                          className="bg-gradient-to-r from-[#e44126] to-[#d63516] h-4 rounded-full transition-all duration-500 shadow-sm"
+                          style={{ width: '85%' }}
+                        ></div>
+                      </div>
+                    </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <TitleSelector
-                        
+
                         onChange={(titles) => {
                           // titles: { id, name, experience? }[]
                           console.log("Selected titles:", titles);
                         }}
                       />
                     </div>
-                        
+
                   </div>
                   <div className="mt-4">
                     <div className="mt-2">

@@ -35,7 +35,6 @@ export default function SkillSelector({
     initialSkills = [],
     onChange,
     onChangeBoth,
-    onCertChange,
     debounceMs = 350,
     minChars = 2,
     placeholder = "Search skills",
@@ -59,7 +58,7 @@ export default function SkillSelector({
     const abortRef = useRef<AbortController | null>(null)
     const lastQueryRef = useRef<string | null>(null)
 
-    const token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNDNjZCRjIzMjBGNkY4RDQ2QzJERDhCMjI0MEVGMTFENTZEQkY3MUYiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJQR2FfSXlEMi1OUnNMZGl5SkE3eEhWYmI5eDgifQ.eyJuYmYiOjE3NTc2ODMzMjYsImV4cCI6MTc1NzY4NjkyNiwiaXNzIjoiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20iLCJhdWQiOlsiZW1zaV9vcGVuIiwiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20vcmVzb3VyY2VzIl0sImNsaWVudF9pZCI6ImNlZXRveGR5YWxmOGZxNzUiLCJuYW1lIjoiUmFtZXNoIERlc2giLCJjb21wYW55IjoiRGVzaCIsImVtYWlsIjoicmFtZXNod2FyYW0xMkB5b3BtYWlsLmNvbSIsImlhdCI6MTc1NzY4MzMyNiwic2NvcGUiOlsiZW1zaV9vcGVuIl19.wx9bAZV747s8oAXHyI9DB7H8eN4EveH_MdlbHRWipzknI-konMZnedQ_H6VcYr3xCNf247yvvBRFnWGgm-n_7qx1BV1Yybc3_h8_HJrhljo1fZk_En1elUmGvx1HbJoBgTpl9iFuuXBWy7fJROUlIX59ImozhJ6gb7lSmaPvx70Rj2GIQsm3GHn10cOT0Ql-i6bHzwzt9lJ2kLZzKQh6a-X0S3iR211XFUVicwAZb_L0fYNxGvEiV_79uwD_Bhp0UcDrb5S5pp5sashBrwa61YSgO0_2dBDh4awLAPX60ibYSXzT43lGWxsQiiUOUUSZFpkM5QqL9st2WhCrWaaLIw"
+    const token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNDNjZCRjIzMjBGNkY4RDQ2QzJERDhCMjI0MEVGMTFENTZEQkY3MUYiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJQR2FfSXlEMi1OUnNMZGl5SkE3eEhWYmI5eDgifQ.eyJuYmYiOjE3NTc5MTU1MDUsImV4cCI6MTc1NzkxOTEwNSwiaXNzIjoiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20iLCJhdWQiOlsiZW1zaV9vcGVuIiwiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20vcmVzb3VyY2VzIl0sImNsaWVudF9pZCI6ImNlZXRveGR5YWxmOGZxNzUiLCJuYW1lIjoiUmFtZXNoIERlc2giLCJjb21wYW55IjoiRGVzaCIsImVtYWlsIjoicmFtZXNod2FyYW0xMkB5b3BtYWlsLmNvbSIsImlhdCI6MTc1NzkxNTUwNSwic2NvcGUiOlsiZW1zaV9vcGVuIl19.vT30bhN0i_cq-0f8-gujNJzDuo2HN82pzdt_1NyiOkDOJfvlFAP0xAXsaC095_TGtUE9DMe1GLqTlyrOjVL-zuq_DlR3UZGkLyiPucCQpYVROzvVANl6DsjQXgT9GAgfUYoaf7yuqrFyPlSmDiWXdZen23ZtiA6Tyx8HI4fu5ezOqXJ_SgEtcWMcWlfFZoef5kO92SEkTefqSjmLMt1DHTbR_EseAdCt2mL7suMjtWwq8jzKiYevx6OUkm6Lw-hHGqI_LFa-kLHSBKmcX4X1RzMM2Y3fhSea6wJZrIeu1Hl_UiExerRBZgBZiLD2gcoUU4zSOPxqRHk9OF5Xi5L5jA"
     useEffect(() => {
         inputRef.current?.focus()
     }, [])
@@ -163,36 +162,42 @@ export default function SkillSelector({
 
     const addSkill = useCallback(
         (item: SkillItem) => {
-            setLocalSeed((prev) => prev.filter((s) => s.id !== item.id))
-
-            setNumselected((n) => n + 1)
-
-            setPrimarySelected((prevPrimary) => {
-                if (prevPrimary.length < MAX_SKILLS) {
-                    const exists = prevPrimary.some((s) => s.id === item.id)
-                    const nextPrimary = exists ? prevPrimary : [...prevPrimary, { ...item, years: item.years ?? 0, proficiency: item.proficiency ?? "Novice" }]
-                    onChange?.(nextPrimary)
-                    onChangeBoth?.(nextPrimary, secondarySelected)
-                    return nextPrimary
-                }
-                return prevPrimary
-            })
-
-            setSecondarySelected((prevSecondary) => {
-                // Only add to secondary if primary is full and secondary has room
-                if (primarySelected.length >= MAX_SKILLS) {
-                    if (prevSecondary.length >= MAX_SKILLS) {
-                        setError(`You can select up to ${MAX_SKILLS} secondary skills`)
-                        setOpen(false)
-                        return prevSecondary
-                    }
-                    const exists = prevSecondary.some((s) => s.id === item.id)
-                    const nextSecondary = exists ? prevSecondary : [...prevSecondary, { ...item, years: item.years ?? 0, proficiency: item.proficiency ?? "Novice" }]
-                    onChangeBoth?.(primarySelected, nextSecondary)
-                    return nextSecondary
-                }
-                return prevSecondary
-            })
+            const existsInPrimary = primarySelected.some((s) => s.id === item.id)
+            const existsInSecondary = secondarySelected.some((s) => s.id === item.id)
+            
+            if (existsInPrimary || existsInSecondary) {
+                setError("This skill is already selected")
+                setQuery("")
+                setSuggestions([])
+                setOpen(false)
+                requestAnimationFrame(() => inputRef.current?.focus())
+                return
+            }
+    
+            let skillAdded = false
+    
+            if (primarySelected.length < MAX_SKILLS) {
+                skillAdded = true
+                const nextPrimary = [...primarySelected, { ...item, years: item.years ?? 0, proficiency: item.proficiency ?? "Novice" }]
+                setPrimarySelected(nextPrimary)
+                onChange?.(nextPrimary)
+                onChangeBoth?.(nextPrimary, secondarySelected)
+            } 
+            else if (secondarySelected.length < MAX_SKILLS) {
+                skillAdded = true
+                const nextSecondary = [...secondarySelected, { ...item, years: item.years ?? 0, proficiency: item.proficiency ?? "Novice" }]
+                setSecondarySelected(nextSecondary)
+                onChangeBoth?.(primarySelected, nextSecondary)
+            } 
+            else {
+                setError(`You can select up to ${MAX_SKILLS} primary and ${MAX_SKILLS} secondary skills`)
+            }
+    
+            if (skillAdded) {
+                setLocalSeed((prev) => prev.filter((s) => s.id !== item.id))
+                setNumselected((n) => n + 1)
+            }
+            
             setQuery("")
             setSuggestions([])
             setOpen(false)
@@ -241,12 +246,12 @@ export default function SkillSelector({
                 {localSeed.map((s) => (
                     <span
                         key={s.id}
-                        className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-sm text-indigo-800 border border-indigo-200"
+                        className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm text-red-400 border border-red-300"
                     >
                         {s.name}
                         <button
                             type="button"
-                            className="rounded-full border border-indigo-300 px-2 text-xs text-indigo-700 hover:bg-indigo-100"
+                            className="rounded-full border border-red-300 px-2 text-xs text-red-700 hover:bg-indigo-100"
                             onClick={() => addSkill(s)}
                             onMouseDown={(e) => e.preventDefault()}
                             aria-label={`Add ${s.name}`}
@@ -265,7 +270,7 @@ export default function SkillSelector({
                     onChange={handleInputChange}
                     onBlur={handleBlur}
                     placeholder={placeholder}
-                    className="w-full rounded-2xl border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-2xl border border-gray-300 px-4 py-2 outline-none focus:ring-2 focus:ring-red-500"
                 />
 
                 {open && (
@@ -302,7 +307,7 @@ export default function SkillSelector({
                         marginTop: "10px",
                     }}
                 >
-                    Mention your 5 primary Skills
+                    Mention upto 5 primary Skills
                 </h3>
             )}
 
@@ -310,13 +315,13 @@ export default function SkillSelector({
                 {primarySelected.map((s) => (
                     <div
                         key={s.id}
-                        className="w-full max-w-xl rounded-xl bg-white border border-indigo-200 shadow-sm p-3"
+                        className="w-full max-w-xl rounded-xl bg-white border border-red-200 shadow-sm p-3"
                     >
                         <div className="flex items-center justify-between">
-                            <span className="text-sm font-semibold text-indigo-900">{s.name}</span>
+                            <span className="text-sm font-semibold text-red-900">{s.name}</span>
                             <button
                                 type="button"
-                                className="rounded-full border border-indigo-300 px-2 text-xs text-indigo-700 hover:bg-indigo-50"
+                                className="rounded-full border border-red-300 px-2 text-xs text-indigo-700 hover:bg-indigo-50"
                                 onClick={() => removeSkill(s.id)}
                                 onMouseDown={(e) => e.preventDefault()}
                                 aria-label={`Remove ${s.name}`}
@@ -327,7 +332,7 @@ export default function SkillSelector({
                         </div>
 
                         <div className="mt-3 flex flex-wrap items-center gap-3">
-                            <label className="flex items-center gap-2 text-[13px] text-indigo-700">
+                            <label className="flex items-center gap-2 text-[13px] text-red-700">
                                 <span>Years</span>
                                 <select
                                     value={typeof s.years === "number" ? s.years : 0}
@@ -340,7 +345,7 @@ export default function SkillSelector({
                                             return next
                                         })
                                     }}
-                                    className="h-8 rounded-md border border-indigo-200 bg-white px-2 text-xs text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                    className="h-8 rounded-md border border-red-200 bg-white px-2 text-xs text-red-800 focus:outline-none focus:ring-2 focus:ring-red-200"
                                     aria-label={`Years of experience for ${s.name}`}
                                     title="Years of experience"
                                 >
@@ -351,7 +356,7 @@ export default function SkillSelector({
                                     ))}
                                 </select>
                             </label>
-                            <label className="flex items-center gap-2 text-[13px] text-indigo-700">
+                            <label className="flex items-center gap-2 text-[13px] text-red-700">
                                 <span>Proficiency</span>
                                 <select
                                     value={s.proficiency || "Novice"}
@@ -366,7 +371,7 @@ export default function SkillSelector({
                                             return next
                                         })
                                     }}
-                                    className="h-8 rounded-md border border-indigo-200 bg-white px-2 text-xs text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                    className="h-8 rounded-md border border-red-200 bg-white px-2 text-xs text-red-800 focus:outline-none focus:ring-2 focus:ring-red-200"
                                     aria-label={`Proficiency for ${s.name}`}
                                     title="Proficiency"
                                 >
@@ -379,7 +384,7 @@ export default function SkillSelector({
                             </label>
                         </div>
                         <div className="mt-3">
-                            <label className="block text-[13px] text-indigo-700 mb-1">Certification link</label>
+                            <label className="block text-[13px] text-red-700 mb-1">Certification link</label>
                             <input
                                 value={(s as any).certification || ""}
                                 onChange={(e) => {
@@ -394,7 +399,7 @@ export default function SkillSelector({
                                     })
                                 }}
                                 placeholder="Enter the certificate url"
-                                className="w-full h-9 rounded-md border border-indigo-200 bg-white px-3 text-sm text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                className="w-full h-9 rounded-md border border-red-200 bg-white px-3 text-sm text-red-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-red-200"
                                 aria-label={`Certification for ${s.name}`}
                             />
                         </div>
@@ -407,7 +412,7 @@ export default function SkillSelector({
                         marginTop: "14px",
                     }}
                 >
-                    Mention your 5 Secondary Skills
+                    Mention upto 5 Secondary Skills
                 </h3>
             )}
 
@@ -416,13 +421,13 @@ export default function SkillSelector({
                     {secondarySelected.map((s) => (
                         <div
                             key={s.id}
-                            className="w-full max-w-xl rounded-xl bg-white border border-indigo-200 shadow-sm p-3"
+                            className="w-full max-w-xl rounded-xl bg-white border border-red-200 shadow-sm p-3"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-semibold text-indigo-900">{s.name}</span>
+                                <span className="text-sm font-semibold text-red-500">{s.name}</span>
                                 <button
                                     type="button"
-                                    className="rounded-full border border-indigo-300 px-2 text-xs text-indigo-700 hover:bg-indigo-50"
+                                    className="rounded-full border border-red-300 px-2 text-xs text-red-400 hover:bg-red-50"
                                     onClick={() => removeSkill(s.id)}
                                     onMouseDown={(e) => e.preventDefault()}
                                     aria-label={`Remove ${s.name}`}
@@ -432,7 +437,7 @@ export default function SkillSelector({
                                 </button>
                             </div>
                             <div className="mt-3 flex flex-wrap items-center gap-3">
-                                <label className="flex items-center gap-2 text-[13px] text-indigo-700">
+                                <label className="flex items-center gap-2 text-[13px] text-red-400">
                                     <span>Years</span>
                                     <select
                                         value={typeof s.years === "number" ? s.years : 0}
@@ -444,7 +449,7 @@ export default function SkillSelector({
                                                 return next
                                             })
                                         }}
-                                        className="h-8 rounded-md border border-indigo-200 bg-white px-2 text-xs text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                        className="h-8 rounded-md border border-red-200 bg-white px-2 text-xs text-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                                         aria-label={`Years of experience for ${s.name}`}
                                         title="Years of experience"
                                     >
@@ -456,7 +461,7 @@ export default function SkillSelector({
                                     </select>
                                 </label>
 
-                                <label className="flex items-center gap-2 text-[13px] text-indigo-700">
+                                <label className="flex items-center gap-2 text-[13px] text-red-400">
                                     <span>Proficiency</span>
                                     <select
                                         value={s.proficiency || "Novice"}
@@ -470,7 +475,7 @@ export default function SkillSelector({
                                                 return next
                                             })
                                         }}
-                                        className="h-8 rounded-md border border-indigo-200 bg-white px-2 text-xs text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                        className="h-8 rounded-md border border-red-200 bg-white px-2 text-xs text-red-400 focus:outline-none focus:ring-2 focus:ring-red-200"
                                         aria-label={`Proficiency for ${s.name}`}
                                         title="Proficiency"
                                     >
@@ -483,7 +488,6 @@ export default function SkillSelector({
                                 </label>
                             </div>
 
-                            {/* Bottom: Certification (moved down) */}
                             <div className="mt-3">
                                 <label className="block text-[13px] text-indigo-700 mb-1">Certification link</label>
                                 <input
@@ -498,7 +502,7 @@ export default function SkillSelector({
                                         })
                                     }}
                                     placeholder="Enter the certificate url"
-                                    className="w-full h-9 rounded-md border border-indigo-200 bg-white px-3 text-sm text-indigo-900 placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                                    className="w-full h-9 rounded-md border border-red-200 bg-white px-3 text-sm text-red-500 placeholder-red-300 focus:outline-none focus:ring-2 focus:ring-red-200"
                                     aria-label={`Certification for ${s.name}`}
                                 />
                             </div>
