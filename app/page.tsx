@@ -42,6 +42,7 @@ import VisaAvailabilitySection from "@/components/VisaAvailabilitySection"
 
 import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import "@cyntler/react-doc-viewer/dist/index.css";
+import CardSwap, { Card as CardSwapItem } from "@/components/ui/card-swap"
 
 const FilePreview = ({ file }: { file: any }) => {
   const docs = [
@@ -569,69 +570,6 @@ export default function YTPHomePage() {
 
 
 
-  function ConceptsExplainer() {
-    return (
-      <Card className="border-0 shadow-md">
-        <CardHeader>
-          <CardTitle className="text-xl">Key Concepts</CardTitle>
-          <CardDescription>
-            Quick primer on YTP, GIS, and ATS so candidates know what they’re seeing and why it matters.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-3 gap-4">
-            {/* YTP */}
-            <div className="rounded-lg border bg-white p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold">YTP</span>
-                <Badge variant="secondary">Y-Axis Talent Pool</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                <span className="font-medium text-foreground">What is YTP:</span>{" "}
-                YTP (Y-Axis Talent Pool) is a platform that builds globally standardized, verified candidate profiles for jobs, study, and migration.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">Why it’s needed:</span>{" "}
-                It helps candidates showcase skills, visa readiness, and availability clearly, making them discoverable and competitive worldwide.
-              </p>
-            </div>
-
-            {/* GIS */}
-            <div className="rounded-lg border bg-white p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold">GIS</span>
-                <Badge variant="secondary">Global Indian Score</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                <span className="font-medium text-foreground">What is GIS:</span>{" "}
-                GIS (Global Indian Score) is a 0–100 score that measures a candidate’s likelihood of succeeding abroad based on skills, education, visa, and readiness.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">Why it’s necessary:</span>{" "}
-                It gives candidates a clear benchmark of their global readiness and highlights actions to improve chances of success.
-              </p>
-            </div>
-
-            {/* ATS */}
-            <div className="rounded-lg border bg-white p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-semibold">ATS</span>
-                <Badge variant="secondary">Applicant Tracking System</Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-2">
-                <span className="font-medium text-foreground">What is ATS:</span>{" "}
-                ATS (Applicant Tracking System) is software recruiters use to scan, filter, and rank resumes before human review.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-foreground">Why it’s necessary:</span>{" "}
-                It saves recruiters time, ensures fair shortlisting, and helps candidates with optimized profiles get noticed.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
 
   // Example data mapping from your state
   const profile: ProfileSummary = {
@@ -703,6 +641,78 @@ export default function YTPHomePage() {
   ];
   return (
     <div className="min-h-screen bg-white">
+       <div className="fixed bottom-14 right-10 z-40">
+         <div style={{ height: '400px', position: 'relative' }}>
+           <CardSwap
+             width={380}
+             height={300}
+             cardDistance={40}
+             verticalDistance={50}
+             delay={4000}
+             pauseOnHover={true}
+           >
+            <CardSwapItem className="bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
+              <div className="p-6 h-full flex flex-col justify-center">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">What is YTP?</h3>
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full mb-4 inline-block">Y-Axis Talent Pool</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  YTP (Y-Axis Talent Pool) is a platform that builds globally standardized, verified candidate profiles for jobs, study, and migration.
+                </p>
+              </div>
+            </CardSwapItem>
+
+            <CardSwapItem className="bg-gradient-to-br from-green-50 to-emerald-100 border-green-200">
+              <div className="p-6 h-full flex flex-col justify-center">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">What is GIS?</h3>
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full mb-4 inline-block">Global Indian Score</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  GIS (Global Indian Score) is a 0–100 score that measures your likelihood of succeeding abroad based on skills, education, visa, and readiness.
+                </p>
+              </div>
+            </CardSwapItem>
+
+            <CardSwapItem className="bg-gradient-to-br from-purple-50 to-violet-100 border-purple-200">
+              <div className="p-6 h-full flex flex-col justify-center">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">What is ATS?</h3>
+                <span className="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full mb-4 inline-block">Applicant Tracking System</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  ATS (Applicant Tracking System) is software recruiters use to scan, filter, and rank resumes before human review.
+                </p>
+              </div>
+            </CardSwapItem>
+
+            <CardSwapItem className="bg-gradient-to-br from-orange-50 to-amber-100 border-orange-200">
+              <div className="p-6 h-full flex flex-col justify-center">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">Why professional resume?</h3>
+                <span className="bg-orange-100 text-orange-800 text-xs font-medium px-3 py-1 rounded-full mb-4 inline-block">ATS Optimization</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Professional resumes are ATS-optimized with proper formatting, keywords, and structure. They increase your chances of passing initial screening by 3x.
+                </p>
+              </div>
+            </CardSwapItem>
+
+            <CardSwapItem className="bg-gradient-to-br from-red-50 to-rose-100 border-red-200">
+              <div className="p-6 h-full flex flex-col justify-center">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">Visa status impact?</h3>
+                <span className="bg-red-100 text-red-800 text-xs font-medium px-3 py-1 rounded-full mb-4 inline-block">Immigration Readiness</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Your visa status significantly impacts job opportunities. Work visas require employer sponsorship, while PR/citizenship status opens up more positions.
+                </p>
+              </div>
+            </CardSwapItem>
+
+            <CardSwapItem className="bg-gradient-to-br from-teal-50 to-cyan-100 border-teal-200">
+              <div className="p-6 h-full flex flex-col justify-center">
+                <h3 className="font-bold text-gray-900 mb-3 text-lg">Global competitiveness?</h3>
+                <span className="bg-teal-100 text-teal-800 text-xs font-medium px-3 py-1 rounded-full mb-4 inline-block">Global Readiness</span>
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  Global competitiveness combines technical skills, cultural adaptability, language proficiency, and market-relevant experience.
+                </p>
+              </div>
+            </CardSwapItem>
+          </CardSwap>
+        </div>
+      </div>
       {/* Header */}
       <header className="border-b bg-white shadow-sm sticky top-0 z-50">
         <div className="container mx-auto p-2">
@@ -727,7 +737,7 @@ export default function YTPHomePage() {
 
             {/* ---------------- Upload ---------------- */}
             {currentStep === "upload" && (
-              <Card className="mb-10 hover-lift animate-slide-up shadow-lg border-0">
+              <Card className="mb-10 hover-lift animate-slide-up shadow-lg border-0 max-w-3xl ">
                 <CardHeader className="text-center ">
                   <CardTitle className="text-balance mb-2 text-gray-900">Upload Your Resume</CardTitle>
                   <CardDescription className="text-sm text-gray-600 max-w-2xl mx-auto">
@@ -825,10 +835,6 @@ export default function YTPHomePage() {
                     />
                   </div>
 
-                  {/* ⬇️ Add here */}
-                  <div className="mt-8">
-                    <ConceptsExplainer />
-                  </div>
                 </CardContent>
               </Card>
             )}
