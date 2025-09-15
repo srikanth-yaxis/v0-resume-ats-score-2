@@ -36,6 +36,7 @@ import {
   FileText,
   Sparkles,
   Search,
+  TrendingUp,
 } from "lucide-react"
 import VisaAvailabilitySection from "@/components/VisaAvailabilitySection"
 
@@ -45,28 +46,6 @@ import VisaAvailabilitySection from "@/components/VisaAvailabilitySection"
 const PARSE_ENDPOINT = "http://13.126.164.132:8000/parse-resume"
 const RESUME_MODEL = "nova"
 
-const softwareSkills = [
-  "JavaScript",
-  "Python",
-  "Java",
-  "C#",
-  "C++",
-  "TypeScript",
-  "React.js",
-  "Node.js",
-  "Express.js",
-  "Next.js",
-  "MongoDB",
-  "SQL",
-  "HTML",
-  "CSS",
-  "Git",
-  "Docker",
-  "Kubernetes",
-  "AWS",
-  "REST APIs",
-  "Agile Methodologies",
-].slice(0, 20)
 
 const steps = [
   { id: "upload", label: "Resume" },
@@ -121,7 +100,6 @@ function UploadProgressCarousel({
   }, [])
 
   const revealedCount = Math.min(resumeTips.length, Math.max(1, Math.ceil((progress / 100) * resumeTips.length)))
-
   return (
     <div className="flex flex-col items-center">
       {/* spotlight container */}
@@ -368,6 +346,7 @@ function StepperSidebar({
 export default function YTPHomePage() {
   const [currentStep, setCurrentStep] = useState<StepId>("upload")
   const [completed, setCompleted] = useState<Set<StepId>>(new Set())
+  const [skills, setSkills] = useState([])
 
   const [expertiseData, setExpertiseData] = useState<any>({
     avatar1: { role: "", experience: "", skills: [] },
@@ -460,6 +439,18 @@ export default function YTPHomePage() {
     const xhr = new XMLHttpRequest()
     xhr.open("POST", PARSE_ENDPOINT, true)
 
+
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        const json = JSON.parse(xhr.responseText);
+        console.log(typeof (json), typeof (skills));
+        setSkills(json.results.nova.Skills)
+        console.log("✅ Response:", json.results.nova.Skills);
+      } else {
+        console.error("❌ Request failed:", xhr.status, xhr.statusText);
+      }
+    };
+
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
         const pct = Math.max(0, Math.min(100, Math.round((e.loaded / e.total) * 100)))
@@ -503,10 +494,8 @@ export default function YTPHomePage() {
 
     xhr.send(form)
 
-    // safety: if upload finishes very fast, ensure parsing tick still starts
     setTimeout(() => {
       if (phase === "uploading" && uploadPct < 100) {
-        // still uploading
       } else if (phase !== "parsing" && phase !== "done" && phase !== "error") {
         startParsingTick()
       }
@@ -847,67 +836,185 @@ export default function YTPHomePage() {
             {/* ---------------- Expertise ---------------- */}
             {currentStep === "expertise" && (
               <Card className="mb-12 hover-lift animate-slide-up shadow-lg border-0">
-                <CardHeader className="text-center pb-8 pt-12">
+                <div className="space-y-6">
+                  <Card className="border-0 shadow-none">
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl text-balance">Your ATS Score</CardTitle>
+                      <CardDescription>
+                        Based on analysis of your resume: {uploadedFile?.name}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <div className="relative w-32 h-32 mx-auto mb-6">
+                        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 120 120">
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            className="text-muted"
+                          />
+                          <circle
+                            cx="60"
+                            cy="60"
+                            r="50"
+                            stroke="currentColor"
+                            strokeWidth="8"
+                            fill="none"
+                            strokeDasharray={`${42 * 3.14159} ${314.159}`}
+                            className="text-destructive"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-3xl font-bold text-destructive">42</div>
+                            <div className="text-sm text-muted-foreground">out of 100</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6 w-full max-w-3xl mx-auto">
+                        <h3 className="font-semibold text-destructive mb-2">Score Analysis</h3>
+                        <ul className="text-sm text-left space-y-1">
+                          <li>• Missing key industry keywords</li>
+                          <li>• Formatting issues detected</li>
+                          <li>• Skills section needs improvement</li>
+                          <li>• Work experience lacks quantifiable achievements</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <CardHeader className="text-center pb-8 pt-5">
                   <CardTitle className="text-3xl text-balance mb-4 text-gray-900">Profile Yourself as an Expert</CardTitle>
                   <CardDescription className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Define your primary expertise and supporting skills. Employers search for experts first - make sure you lead with your strongest professional identity.
+                    Define your primary expertise and supporting skills. Employers search for experts first - make sure you
+                    lead with your strongest professional identity.
                   </CardDescription>
                 </CardHeader>
+
                 <CardContent className="pb-12">
                   <div className="space-y-8 max-w-3xl mx-auto">
-                    <div className="border-2 border-primary/20 rounded-xl p-6 bg-primary/5">
+                    {/*Primary Skills*/}
+                    <div className="border-2 border-primary/20 rounded-xl p-6">
                       <div className="flex items-center mb-4">
                         <Star className="w-5 h-5 text-primary mr-2" />
-                        <h3 className="text-xl font-semibold text-gray-900">Your Primary Expertise</h3>
-                        <Badge className="ml-2 bg-primary">PRIORITY</Badge>
+                        <h3 className="text-xl font-semibold text-gray-900">Your Expertise</h3>
                       </div>
-                      <div className="grid md:grid-cols-2 gap-4">
+                      <div className="grid gap-4">
                         <div>
                           <TitleSelector
                             onChange={(titles) => {
-                              // titles: { id, name, experience? }[]
-                              console.log("Selected titles:", titles)
+                              console.log("Selected titles:", titles);
                             }}
                           />
                         </div>
                       </div>
+                      <div className="space-y-4 mt-5">
+                        <div className="w-full max-w-2xl">
+                          <label htmlFor="industry" className="block mb-1 text-sm font-medium text-gray-700">
+                            Your Preferred Industry
+                          </label>
+                          <input
+                            id="industry"
+                            type="text"
+                            placeholder="Enter your preferred industry"
+                            className="block w-full rounded-lg border border-gray-300 p-2.5 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          />
+                        </div>
+                        <div className="w-full max-w-2xl">
+                          <label htmlFor="title" className="block mb-1 text-sm font-medium text-gray-700">
+                            Your Preferred Title
+                          </label>
+                          <input
+                            id="title"
+                            type="text"
+                            placeholder="Enter your preferred title"
+                            className="block w-full rounded-lg border border-gray-300 p-2.5 focus:outline-none focus:ring-2 focus:ring-red-200"
+                          />
+                        </div>
+                      </div>
+
                       <div className="mt-4">
-                        <SkillSelector
-                          placeholder="Search and add primary skills"
-                          seedItems={softwareSkills.map((name, i) => ({ id: String(i), name }))}
-                          onChangeBoth={(primary, secondary) => {
-                            setExpertiseData((prev: any) => ({
-                              ...prev,
-                              avatar1: {
-                                ...prev.avatar1,
-                                skills: primary.map((s) => ({
-                                  name: s.name,
-                                  years: s.years ?? 0,
-                                  proficiency: s.proficiency || "Novice",
-                                })),
-                                secondarySkills: secondary.map((s) => ({
-                                  name: s.name,
-                                  years: s.years ?? 0,
-                                  proficiency: s.proficiency || "Novice",
-                                })),
-                              },
-                            }))
-                          }}
-                          onCertChange={(cert) => {
-                            setExpertiseData((prev: any) => ({
-                              ...prev,
-                              avatar1: { ...prev.avatar1, certification: cert },
-                            }))
-                          }}
-                        />
+                        <div className="mt-2">
+                          <SkillSelector
+                            placeholder="Search and add primary skills"
+                            className=""
+                            seedItems={skills.map((name, i) => ({ id: String(i), name }))}
+                            onChangeBoth={(primary, secondary) => {
+                              setExpertiseData((prev: any) => ({
+                                ...prev,
+                                avatar1: {
+                                  ...prev.avatar1,
+                                  skills: primary.map((s) => ({ name: s.name, years: s.years ?? 0, proficiency: s.proficiency || "Novice" })),
+                                  secondarySkills: secondary.map((s) => ({ name: s.name, years: s.years ?? 0, proficiency: s.proficiency || "Novice" })),
+                                },
+                              }))
+                            }}
+                            onCertChange={(cert) => {
+                              setExpertiseData((prev: any) => ({
+                                ...prev,
+                                avatar1: {
+                                  ...prev.avatar1,
+                                  certification: cert,
+                                },
+                              }))
+                            }}
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <Button variant="outline" className="bg-transparent" onClick={goBack} disabled={!canGoBack}>
-                        <ChevronLeft className="w-4 h-4 mr-2" /> Back
-                      </Button>
+                    <Card className="border-primary">
+                      <CardHeader>
+                        <CardTitle className="flex items-center text-primary">
+                          <TrendingUp className="w-5 h-5 mr-2" />
+                          Improve Your ATS Score
+                        </CardTitle>
+                        <CardDescription>
+                          Our professional resume writing service can help you achieve a score of 85+ and get noticed by
+                          employers
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid md:grid-cols-2 gap-4 mb-6">
+                          <div className="space-y-2">
+                            <h4 className="font-semibold">What you'll get:</h4>
+                            <ul className="text-sm space-y-1">
+                              <li>✓ ATS-optimized formatting</li>
+                              <li>✓ Industry-specific keywords</li>
+                              <li>✓ Professional content review</li>
+                              <li>✓ Unlimited revisions</li>
+                            </ul>
+                          </div>
+                          <div className="space-y-2">
+                            <h4 className="font-semibold">Results you can expect:</h4>
+                            <ul className="text-sm space-y-1">
+                              <li>📈 85+ ATS score guaranteed</li>
+                              <li>📧 3x more interview calls</li>
+                              <li>⚡ 48-hour turnaround</li>
+                              <li>💼 Industry expert writers</li>
+                            </ul>
+                          </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button asChild className="flex-1">
+                            <a href="https://store.y-axis.com/" target="_blank" rel="noopener noreferrer">
+                              Get Professional Resume Writing
+                              <ExternalLink className="w-4 h-4 ml-2" />
+                            </a>
+                          </Button>
+                          <Button variant="outline" onClick={() => setCurrentStep("profile-1")}>
+                            Continue to Profile Building
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <div className="text-center">
                       <Button size="lg" onClick={() => handleExpertiseComplete(expertiseData)} className="hover-lift">
-                        Continue to Visa & Availability <ChevronRight className="w-4 h-4 ml-2" />
+                        Continue to Visa & Availability
                       </Button>
                     </div>
                   </div>
