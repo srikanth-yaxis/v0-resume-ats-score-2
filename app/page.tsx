@@ -40,6 +40,28 @@ import {
 } from "lucide-react"
 import VisaAvailabilitySection from "@/components/VisaAvailabilitySection"
 
+import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import "@cyntler/react-doc-viewer/dist/index.css";
+
+const FilePreview = ({ file }: { file: any }) => {
+  const docs = [
+    { uri: file ? URL.createObjectURL(file) : "https://arxiv.org/pdf/quant-ph/0410100.pdf", fileName: file ? file.name : "Sample Resume" },
+  ]
+  return (
+    <DocViewer
+      documents={docs}
+      pluginRenderers={DocViewerRenderers}
+      config={{
+        header: { disableHeader: true, disableFileName: true },
+        pdfZoom: { defaultZoom: 1.25, zoomJump: 0.25 },
+        pdfVerticalScrollByDefault: true,
+      }}
+      className="max-h-[90vh] overflow-auto sticky top-16"
+    />
+
+  )
+}
+
 /* ---------------------
    Config
 --------------------- */
@@ -51,8 +73,8 @@ const steps = [
   { id: "upload", label: "Resume" },
   { id: "expertise", label: "Expertise" },
   { id: "visa-availability", label: "Visa & Location" },
-  { id: "profile-1", label: "Profile" },
-  { id: "profile-2", label: "Profile" },
+  { id: "profile", label: "Profile" },
+  // { id: "profile-2", label: "Profile" },
   { id: "odds-meter", label: "Assessment" },
   { id: "y-path", label: "Y-Path" },
   { id: "success", label: "Success" },
@@ -274,8 +296,8 @@ function StepperSidebar({
   }, [current])
 
   return (
-    <aside className="hidden lg:block lg:sticky lg:top-24 self-start lg:-ml-6 lg:w-[290px] lg:h-[70vh]">
-      <div className="rounded-2xl border bg-white shadow-sm p-2 h-full flex flex-col overflow-hidden">
+    <aside className="hidden lg:block lg:sticky lg:top-24 self-start lg:mr-4 ">
+      <div className="rounded-2xl border bg-white shadow-sm p-2">
         {/* header + tiny progress */}
         <div className="mb-3">
           <div className="flex items-center justify-between text-xs">
@@ -299,9 +321,8 @@ function StepperSidebar({
             const isCurrent = s.id === current
             const isPast = idx < currentIdx
             const isDone = completed.has(s.id) || isPast
-            const status = isCurrent ? "In progress" : isDone ? "Completed" : "Pending"
             return (
-              <li key={s.id} className="relative">
+              <li key={s.id} className="relative my-2">
                 <button
                   // ref={(el) => (refs.current[s.id] = el)}
                   type="button"
@@ -319,7 +340,7 @@ function StepperSidebar({
                         ? "border-primary bg-primary text-white"
                         : isCurrent
                           ? "border-primary text-primary bg-white"
-                          : "border-gray-300 text-gray-500 bg-white",
+                          : "border-gray-300 text-gray-500 bg-white"                          
                     )}
                   >
                     {isDone ? <CheckCircle className="h-3.5 w-3.5" /> : idx + 1}
@@ -328,7 +349,7 @@ function StepperSidebar({
                     <span className={cn("text-sm font-medium", isCurrent ? "text-primary" : "text-gray-900")}>
                       {s.label}
                     </span>
-                    <span className="text-[10px] uppercase tracking-wide text-gray-400">{status}</span>
+                    {/* <span className="text-[10px] uppercase tracking-wide text-gray-400">{status}</span> */}
                   </div>
                 </button>
               </li>
@@ -537,12 +558,12 @@ export default function YTPHomePage() {
   }
   const handleProfileSection1Complete = (data: any) => {
     setProfileData((prev: any) => ({ ...prev, section1: data }))
-    markCompleteAndNext("profile-1")
+    markCompleteAndNext("profile")
   }
-  const handleProfileSection2Complete = (data: any) => {
-    setProfileData((prev: any) => ({ ...prev, section2: data }))
-    markCompleteAndNext("profile-2")
-  }
+  // const handleProfileSection2Complete = (data: any) => {
+  //   setProfileData((prev: any) => ({ ...prev, section2: data }))
+  //   markCompleteAndNext("profile-2")
+  // }
   const handleOddsMeterContinue = () => markCompleteAndNext("odds-meter")
   const handleYPathContinue = () => markCompleteAndNext("y-path")
 
@@ -684,28 +705,22 @@ export default function YTPHomePage() {
     <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-5">
+        <div className="container mx-auto p-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Image src="/y-axis-logo.png" alt="Y-axis Logo" width={140} height={45} className="h-10 w-auto" />
+              <Image src="/y-axis-logo.png" alt="Y-axis Logo" width={100} height={25} />
               <div className="border-l border-gray-200 pl-4">
                 <h1 className="text-xl font-bold text-gray-900">Talent Pool</h1>
-                <p className="text-xs text-gray-600">Expert-Led Career Platform</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-10 max-w-6xl">
-        {/* 30/70 GRID SPLIT (desktop), single column on mobile */}
-        <div className="grid grid-cols-1 lg:[grid-template-columns:25%_75%] gap-6">
-          {/* LEFT: Journey sidebar — sticky, scroll-friendly */}
+      <main className="container mx-auto px-3 py-8 max-w-7xl">
+        <div className="grid grid-cols-1 lg:[grid-template-columns:20%_80%] ">
           <StepperSidebar current={currentStep} completed={completed} onJump={(id) => setCurrentStep(id)} />
-
-          {/* RIGHT: main content */}
           <section>
-            {/* Mobile stepper */}
             <div className="lg:hidden">
               <Stepper current={currentStep} completed={completed} onJump={(id) => setCurrentStep(id)} />
             </div>
@@ -713,13 +728,13 @@ export default function YTPHomePage() {
             {/* ---------------- Upload ---------------- */}
             {currentStep === "upload" && (
               <Card className="mb-10 hover-lift animate-slide-up shadow-lg border-0">
-                <CardHeader className="text-center pb-6 pt-8">
-                  <CardTitle className="text-2xl text-balance mb-2 text-gray-900">Upload Your Resume</CardTitle>
-                  <CardDescription className="text-base text-gray-600 max-w-2xl mx-auto">
+                <CardHeader className="text-center ">
+                  <CardTitle className="text-balance mb-2 text-gray-900">Upload Your Resume</CardTitle>
+                  <CardDescription className="text-sm text-gray-600 max-w-2xl mx-auto">
                     Start by uploading your resume. We'll use it to tailor the next steps of your profile.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pb-6">
+                <CardContent className="pb-3">
                   <div
                     role="button"
                     tabIndex={0}
@@ -745,7 +760,7 @@ export default function YTPHomePage() {
                   >
                     {phase === "idle" || phase === "error" ? (
                       <>
-                        <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                        <Upload className="w-8 h-8 mx-auto mb-4 text-gray-400" />
                         <h3 className="text-lg font-semibold mb-1 text-gray-900">Drop your resume here</h3>
                         <p className="text-gray-600 mb-4 text-sm">or click to browse files</p>
                         <input
@@ -806,18 +821,6 @@ export default function YTPHomePage() {
                         "Experience calibration",
                         "Certs & licenses highlight",
                         "Domain-specific tips",
-                      ]}
-                    />
-                    <MiniInfoCarousel
-                      icon="file"
-                      speed={26}
-                      items={[
-                        "Generate tailored summary",
-                        "Quantify achievements",
-                        "Fix duplicates & weak lines",
-                        "Section order optimization",
-                        "Create recruiter-ready PDF",
-                        "Get personalized Y-Path",
                       ]}
                     />
                   </div>
@@ -1006,7 +1009,7 @@ export default function YTPHomePage() {
                               <ExternalLink className="w-4 h-4 ml-2" />
                             </a>
                           </Button>
-                          <Button variant="outline" onClick={() => setCurrentStep("profile-1")}>
+                          <Button variant="outline" onClick={() => setCurrentStep("profile")}>
                             Continue to Profile Building
                           </Button>
                         </div>
@@ -1034,28 +1037,38 @@ export default function YTPHomePage() {
 
 
             {/* ---------------- Profile 1 ---------------- */}
-            {currentStep === "profile-1" && (
+            {currentStep === "profile" && (
               <div className="animate-slide-up">
-                <div className="text-center mb-10">
-                  <h2 className="text-3xl font-bold text-balance mb-4 text-gray-900">Build Your Professional Profile</h2>
-                  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+                <div className="text-center mb-5">
+                  <h2 className="text-xl font-bold text-balance mb-4 text-gray-900">Build Your Professional Profile</h2>
+                  <p className="text-sm text-gray-600 max-w-3xl mx-auto">
                     Section 1: Personal Information, Education, Work Experience & Projects
                   </p>
                 </div>
-                <ProfileSection1 onComplete={handleProfileSection1Complete} />
+                <div className="grid md:grid-cols-2 gap-4 ">
+                  <div className="md:cols-7/12 ">
+                    <ProfileSection1 onComplete={handleProfileSection1Complete} apiData={parsedResume?.results?.nova || []} />
+                  </div>
+                  <div className="md:cols-4/12 shadow-md">
+                    <FilePreview file={uploadedFile} />
+                  </div>
+                </div>
                 <div className="mt-6 flex items-center justify-between">
                   <Button variant="outline" className="bg-transparent" onClick={goBack}>
                     <ChevronLeft className="w-4 h-4 mr-2" /> Back
                   </Button>
                   <Button variant="ghost" onClick={goNext}>
-                    Skip <ChevronRight className="w-4 h-4 ml-2" />
+                    Skip 
+                  </Button>
+                  <Button size="lg" onClick={() => handleProfileSection1Complete(profileData)} className="hover-lift">
+                    Continue to Aseessment <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </div>
             )}
 
             {/* ---------------- Profile 2 ---------------- */}
-            {currentStep === "profile-2" && (
+            {/* {currentStep === "profile-2" && (
               <div className="animate-slide-up">
                 <div className="text-center mb-10">
                   <h2 className="text-3xl font-bold text-balance mb-4 text-gray-900">Complete Your Profile</h2>
@@ -1073,7 +1086,7 @@ export default function YTPHomePage() {
                   </Button>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* ---------------- Odds Meter ---------------- */}
             {currentStep === "odds-meter" && (

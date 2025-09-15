@@ -120,6 +120,7 @@ interface ProfileSection1Props {
 }
 
 export default function ProfileSection1({ onComplete, initialData, apiData }: ProfileSection1Props) {
+  console.log("API Data:", apiData)
   const transformApiData = (api: ApiProfileData): Partial<ProfileData> => {
     return {
       firstName: api["First Name"] || "",
@@ -176,152 +177,33 @@ export default function ProfileSection1({ onComplete, initialData, apiData }: Pr
   }
 
   const [profileData, setProfileData] = useState<ProfileData>({
-    firstName: apiData ? transformApiData(apiData).firstName || "Aarav" : initialData?.firstName || "Aarav",
+    firstName: apiData ? transformApiData(apiData).firstName || "" : '',
     middleName: initialData?.middleName || "",
-    lastName: apiData ? transformApiData(apiData).lastName || "Sharma" : initialData?.lastName || "Sharma",
-    dateOfBirth: initialData?.dateOfBirth || "1995-08-17",
-    maritalStatus: initialData?.maritalStatus || "single",
+    lastName: apiData ? transformApiData(apiData).lastName || "" : initialData?.lastName || "",
+    dateOfBirth: initialData?.dateOfBirth || "",
+    maritalStatus: initialData?.maritalStatus || "",
     phoneNumber: apiData
-      ? transformApiData(apiData).phoneNumber || "9876543210"
-      : initialData?.phoneNumber || "9876543210",
+      ? transformApiData(apiData).phoneNumber || ""
+      : initialData?.phoneNumber || "",
     email: apiData
-      ? transformApiData(apiData).email || "aarav.sharma@example.com"
-      : initialData?.email || "aarav.sharma@example.com",
-    employmentStatus: initialData?.employmentStatus || "employed",
-    landlinePhone: initialData?.landlinePhone || "040-4000-0000",
-    linkedinUrl: initialData?.linkedinUrl || "https://linkedin.com/in/aarav-sharma",
-    gender: initialData?.gender || "male",
-    nationality: initialData?.nationality || "indian",
-    alternatePhone: initialData?.alternatePhone || "9000000000",
-    nickname: initialData?.nickname || "Ray",
-    skypeId: initialData?.skypeId || "live:aarav_sharma",
-    githubId: initialData?.githubId || "https://github.com/aarav-dev",
-    currentLocation: initialData?.currentLocation || "india",
+      ? transformApiData(apiData).email || ""
+      : initialData?.email || "",
+    employmentStatus: initialData?.employmentStatus || "",
+    landlinePhone: initialData?.landlinePhone || "",
+    linkedinUrl: initialData?.linkedinUrl || "",
+    gender: initialData?.gender || "",
+    nationality: initialData?.nationality || "",
+    alternatePhone: initialData?.alternatePhone || "",
+    nickname: initialData?.nickname || "",
+    skypeId: initialData?.skypeId || "",
+    githubId: initialData?.githubId || "",
+    currentLocation: initialData?.currentLocation || "",
     profileSummary: apiData ? transformApiData(apiData).profileSummary || "" : "",
     skills: apiData ? transformApiData(apiData).skills || [] : [],
     address: apiData ? transformApiData(apiData).address || "" : "",
-    education: apiData
-      ? transformApiData(apiData).education || [
-        {
-          institution: "Hyderabad Institute of Technology & Management",
-          level: "bachelors",
-          fieldOfStudy: "Computer Science",
-          degree: "B.Tech (Computer Science & Engineering)",
-          country: "india",
-          isHighest: true,
-          attendanceFrom: { month: "July", year: "2013" },
-          attendanceTo: { month: "May", year: "2017" },
-          courseType: "Full-time",
-          modeOfStudy: "On-campus",
-          mediumOfEducation: "English",
-          division: "First Class with Distinction",
-          percentage: "82",
-          grade: "A",
-          additionalInfo: "Final-year project on scalable event processing with Kafka",
-        },
-      ]
-      : initialData?.education || [
-        {
-          institution: "Hyderabad Institute of Technology & Management",
-          level: "bachelors",
-          fieldOfStudy: "Computer Science",
-          degree: "B.Tech (Computer Science & Engineering)",
-          country: "india",
-          isHighest: true,
-          attendanceFrom: { month: "July", year: "2013" },
-          attendanceTo: { month: "May", year: "2017" },
-          courseType: "Full-time",
-          modeOfStudy: "On-campus",
-          mediumOfEducation: "English",
-          division: "First Class with Distinction",
-          percentage: "82",
-          grade: "A",
-          additionalInfo: "Final-year project on scalable event processing with Kafka",
-        },
-      ],
-    workExperience: apiData
-      ? transformApiData(apiData).workExperience || [
-        {
-          company: "CloudCart Labs Pvt. Ltd.",
-          role: "Senior Software Engineer",
-          functionalArea: "Full-Stack Development",
-          country: "india",
-          isCurrentRole: true,
-          startDate: { month: "January", year: "2022" },
-          endDate: { month: "", year: "" },
-          employmentType: "Full-time",
-          industry: "E-commerce SaaS",
-          responsibilities:
-            "Built multi-tenant storefront builder with React/Next.js and Node.js microservices. Designed event-driven order pipeline; integrated payments, inventory, and search. Implemented CI/CD on AWS (ECS, RDS, SQS), infra as code with Terraform.",
-          achievements:
-            "Cut p95 page load from 3.8s → 1.9s; increased checkout conversion by 7.4%. Reduced infra cost by 18% via autoscaling and query tuning.",
-          skills: ["React", "Next.js", "Node.js", "PostgreSQL", "Redis", "AWS", "Docker", "Kubernetes"],
-          additionalInfo: "Mentored 4 interns; led security hardening initiative.",
-        },
-        {
-          company: "FinNova Technologies",
-          role: "Software Engineer",
-          functionalArea: "Backend & Integrations",
-          country: "india",
-          isCurrentRole: false,
-          startDate: { month: "July", year: "2017" },
-          endDate: { month: "December", year: "2021" },
-          employmentType: "Full-time",
-          industry: "FinTech",
-          responsibilities:
-            "Built loan origination APIs; integrated KYC, AML, and credit scoring partners. Created internal dashboards for risk and collections (Express + React).",
-          achievements:
-            "Reduced underwriting decision time by 35% with rules-engine rollout. Decreased delinquency by 2.3% via better risk features.",
-          skills: ["Node.js", "Express", "React", "MongoDB", "RabbitMQ", "Docker"],
-          additionalInfo: "Presented at company tech talks on event-driven design.",
-        },
-      ]
-      : initialData?.workExperience || [
-        {
-          company: "CloudCart Labs Pvt. Ltd.",
-          role: "Senior Software Engineer",
-          functionalArea: "Full-Stack Development",
-          country: "india",
-          isCurrentRole: true,
-          startDate: { month: "January", year: "2022" },
-          endDate: { month: "", year: "" },
-          employmentType: "Full-time",
-          industry: "E-commerce SaaS",
-          responsibilities:
-            "Built multi-tenant storefront builder with React/Next.js and Node.js microservices. Designed event-driven order pipeline; integrated payments, inventory, and search. Implemented CI/CD on AWS (ECS, RDS, SQS), infra as code with Terraform.",
-          achievements:
-            "Cut p95 page load from 3.8s → 1.9s; increased checkout conversion by 7.4%. Reduced infra cost by 18% via autoscaling and query tuning.",
-          skills: ["React", "Next.js", "Node.js", "PostgreSQL", "Redis", "AWS", "Docker", "Kubernetes"],
-          additionalInfo: "Mentored 4 interns; led security hardening initiative.",
-        },
-        {
-          company: "FinNova Technologies",
-          role: "Software Engineer",
-          functionalArea: "Backend & Integrations",
-          country: "india",
-          isCurrentRole: false,
-          startDate: { month: "July", year: "2017" },
-          endDate: { month: "December", year: "2021" },
-          employmentType: "Full-time",
-          industry: "FinTech",
-          responsibilities:
-            "Built loan origination APIs; integrated KYC, AML, and credit scoring partners. Created internal dashboards for risk and collections (Express + React).",
-          achievements:
-            "Reduced underwriting decision time by 35% with rules-engine rollout. Decreased delinquency by 2.3% via better risk features.",
-          skills: ["Node.js", "Express", "React", "MongoDB", "RabbitMQ", "Docker"],
-          additionalInfo: "Presented at company tech talks on event-driven design.",
-        },
-      ],
-    projects: initialData?.projects || [
-      {
-        name: "Global Jobs Aggregator",
-        associatedWith: "Personal",
-        startDate: { month: "March", year: "2024" },
-        endDate: { month: "", year: "" },
-        description:
-          "Unified 30+ job sources; deduped postings; added search with embeddings and filters. Stack: Next.js, Node.js, PostgreSQL, Elasticsearch, Docker.",
-      },
-    ],
+    education: apiData ? transformApiData(apiData).education || [] : initialData?.education || [],
+    workExperience: apiData ? transformApiData(apiData).workExperience || []: initialData?.workExperience || [],
+    projects: initialData?.projects || [],
     certifications: apiData ? transformApiData(apiData).certifications || [] : [],
   })
 
@@ -537,6 +419,7 @@ export default function ProfileSection1({ onComplete, initialData, apiData }: Pr
                   <SelectValue placeholder="Select Marital Status" />
                 </SelectTrigger>
                 <SelectContent>
+                  {/* <SelectItem value="" disabled>Select</SelectItem> */}
                   <SelectItem value="single">Single</SelectItem>
                   <SelectItem value="married">Married</SelectItem>
                   <SelectItem value="divorced">Divorced</SelectItem>
@@ -1061,84 +944,83 @@ export default function ProfileSection1({ onComplete, initialData, apiData }: Pr
         </CardContent>
       </Card>
 
-      {profileData.certifications.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5" />
-              Certifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {profileData.certifications.map((cert, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-semibold">Certification {index + 1}</h4>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeCertification(index)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GraduationCap className="w-5 h-5" />
+            Certifications
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {profileData.certifications.map((cert, index) => (
+            <div key={index} className="border rounded-lg p-4 space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="font-semibold">Certification {index + 1}</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => removeCertification(index)}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Certification Name *</Label>
-                    <Input
-                      value={cert.name}
-                      onChange={(e) => {
-                        const newCertifications = [...profileData.certifications]
-                        newCertifications[index].name = e.target.value
-                        setProfileData((prev) => ({ ...prev, certifications: newCertifications }))
-                      }}
-                      placeholder="Ex: AWS Certified Solutions Architect"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Issuing Authority</Label>
-                    <Input
-                      value={cert.authority}
-                      onChange={(e) => {
-                        const newCertifications = [...profileData.certifications]
-                        newCertifications[index].authority = e.target.value
-                        setProfileData((prev) => ({ ...prev, certifications: newCertifications }))
-                      }}
-                      placeholder="Ex: Amazon Web Services"
-                    />
-                  </div>
-                </div>
-
+              <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Issue Date</Label>
+                  <Label>Certification Name *</Label>
                   <Input
-                    value={cert.issueDate}
+                    value={cert.name}
                     onChange={(e) => {
                       const newCertifications = [...profileData.certifications]
-                      newCertifications[index].issueDate = e.target.value
+                      newCertifications[index].name = e.target.value
                       setProfileData((prev) => ({ ...prev, certifications: newCertifications }))
                     }}
-                    placeholder="Ex: 2023"
+                    placeholder="Ex: AWS Certified Solutions Architect"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Issuing Authority</Label>
+                  <Input
+                    value={cert.authority}
+                    onChange={(e) => {
+                      const newCertifications = [...profileData.certifications]
+                      newCertifications[index].authority = e.target.value
+                      setProfileData((prev) => ({ ...prev, certifications: newCertifications }))
+                    }}
+                    placeholder="Ex: Amazon Web Services"
                   />
                 </div>
               </div>
-            ))}
 
-            <Button onClick={addCertification} variant="outline" className="w-full bg-transparent">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Certification
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+              <div className="space-y-2">
+                <Label>Issue Date</Label>
+                <Input
+                  value={cert.issueDate}
+                  onChange={(e) => {
+                    const newCertifications = [...profileData.certifications]
+                    newCertifications[index].issueDate = e.target.value
+                    setProfileData((prev) => ({ ...prev, certifications: newCertifications }))
+                  }}
+                  placeholder="Ex: 2023"
+                />
+              </div>
+            </div>
+          ))}
+
+          <Button onClick={addCertification} variant="outline" className="w-full bg-transparent">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Certification
+          </Button>
+        </CardContent>
+      </Card>
+
 
       {/* Navigation */}
-      <div className="flex justify-between mt-8">
-        {/* <Button variant="outline">Back to ATS Score</Button> */}
-        <Button onClick={() => onComplete(profileData)}>Continue to Section 2</Button>
-      </div>
+      {/* <div className="flex justify-between mt-8">
+        <Button variant="outline">Back to ATS Score</Button>
+        </div> */}
+      {/* <Button onClick={() => onComplete(profileData)}>Continue</Button> */}
     </div>
   )
 }
