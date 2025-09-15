@@ -16,6 +16,12 @@ import SkillSelector from "@/components/skill-selector"
 import TitleSelector from "@/components/title-selector"
 import ProfileSection1 from "@/components/profile-section-1"
 import ProfileSection2 from "@/components/profile-section-2"
+import YPathReview, {
+  ProfileSummary,
+  Competitiveness,
+  YPathBuckets,
+  ProductSuggestion,
+} from "@/components/YPathReview";
 import {
   Upload,
   ExternalLink,
@@ -31,6 +37,7 @@ import {
   Sparkles,
   Search,
 } from "lucide-react"
+import VisaAvailabilitySection from "@/components/VisaAvailabilitySection"
 
 /* ---------------------
    Config
@@ -69,7 +76,6 @@ const steps = [
   { id: "profile-2", label: "Profile" },
   { id: "odds-meter", label: "Assessment" },
   { id: "y-path", label: "Y-Path" },
-  { id: "review", label: "Review" },
   { id: "success", label: "Success" },
 ] as const
 
@@ -249,8 +255,8 @@ function Stepper({
                   isCurrent
                     ? "border-primary bg-primary text-white"
                     : isDone
-                    ? "border-primary bg-primary text-white"
-                    : "border-gray-300",
+                      ? "border-primary bg-primary text-white"
+                      : "border-gray-300",
                 )}
               >
                 {isDone ? <CheckCircle className="w-4 h-4" /> : idx + 1}
@@ -290,8 +296,8 @@ function StepperSidebar({
   }, [current])
 
   return (
-    <aside className="hidden lg:block lg:sticky lg:top-24 self-start">
-      <div className="rounded-2xl border bg-white shadow-sm p-2">
+    <aside className="hidden lg:block lg:sticky lg:top-24 self-start lg:-ml-6 lg:w-[290px] lg:h-[70vh]">
+      <div className="rounded-2xl border bg-white shadow-sm p-2 h-full flex flex-col overflow-hidden">
         {/* header + tiny progress */}
         <div className="mb-3">
           <div className="flex items-center justify-between text-xs">
@@ -309,7 +315,7 @@ function StepperSidebar({
         </div>
 
         {/* timeline list */}
-        <ol className="relative pt-2">
+        <ol className="relative pt-2 flex-1 overflow-y-auto pr-1">
           <div className="pointer-events-none absolute left-5 top-0 bottom-0 w-px bg-gradient-to-b from-primary/40 via-gray-200 to-transparent" />
           {steps.map((s, idx) => {
             const isCurrent = s.id === current
@@ -334,8 +340,8 @@ function StepperSidebar({
                       isDone
                         ? "border-primary bg-primary text-white"
                         : isCurrent
-                        ? "border-primary text-primary bg-white"
-                        : "border-gray-300 text-gray-500 bg-white",
+                          ? "border-primary text-primary bg-white"
+                          : "border-gray-300 text-gray-500 bg-white",
                     )}
                   >
                     {isDone ? <CheckCircle className="h-3.5 w-3.5" /> : idx + 1}
@@ -551,6 +557,140 @@ export default function YTPHomePage() {
   const handleOddsMeterContinue = () => markCompleteAndNext("odds-meter")
   const handleYPathContinue = () => markCompleteAndNext("y-path")
 
+
+
+  function ConceptsExplainer() {
+    return (
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <CardTitle className="text-xl">Key Concepts</CardTitle>
+          <CardDescription>
+            Quick primer on YTP, GIS, and ATS so candidates know what they’re seeing and why it matters.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* YTP */}
+            <div className="rounded-lg border bg-white p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold">YTP</span>
+                <Badge variant="secondary">Y-Axis Talent Pool</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                <span className="font-medium text-foreground">What is YTP:</span>{" "}
+                YTP (Y-Axis Talent Pool) is a platform that builds globally standardized, verified candidate profiles for jobs, study, and migration.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Why it’s needed:</span>{" "}
+                It helps candidates showcase skills, visa readiness, and availability clearly, making them discoverable and competitive worldwide.
+              </p>
+            </div>
+
+            {/* GIS */}
+            <div className="rounded-lg border bg-white p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold">GIS</span>
+                <Badge variant="secondary">Global Indian Score</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                <span className="font-medium text-foreground">What is GIS:</span>{" "}
+                GIS (Global Indian Score) is a 0–100 score that measures a candidate’s likelihood of succeeding abroad based on skills, education, visa, and readiness.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Why it’s necessary:</span>{" "}
+                It gives candidates a clear benchmark of their global readiness and highlights actions to improve chances of success.
+              </p>
+            </div>
+
+            {/* ATS */}
+            <div className="rounded-lg border bg-white p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-semibold">ATS</span>
+                <Badge variant="secondary">Applicant Tracking System</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">
+                <span className="font-medium text-foreground">What is ATS:</span>{" "}
+                ATS (Applicant Tracking System) is software recruiters use to scan, filter, and rank resumes before human review.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Why it’s necessary:</span>{" "}
+                It saves recruiters time, ensures fair shortlisting, and helps candidates with optimized profiles get noticed.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // Example data mapping from your state
+  const profile: ProfileSummary = {
+    avatarLabel: "Avatar 1",
+    title: "Senior Software Developer",
+    experience: "6-10 years",
+    visaStatus: "Work Visa",
+    availability: "2 weeks notice",
+  };
+
+  const competitiveness: Competitiveness = {
+    oddsMeter: "35% vs Locals",
+    giScore: "42/100",
+    profileStrength: "Needs Enhancement",
+    recommendedPath: "JSS Premium",
+  };
+
+  const yPath: YPathBuckets = {
+    immediate: [
+      "Professional resume rewrite (+25 points)",
+      "LinkedIn optimization",
+      "Job search strategy (JSS)",
+      "Interview preparation",
+    ],
+    medium: [
+      "Skills certification programs",
+      "Professional networking",
+      "Visa pathway consultation",
+      "Industry mentorship",
+    ],
+    long: [
+      "PR/citizenship pathway",
+      "Leadership development",
+      "Advanced certifications",
+      "Career advancement",
+    ],
+  };
+
+  const suggestedServices: ProductSuggestion[] = [
+    {
+      id: "jss-premium",
+      name: "JSS Premium",
+      bullets: [
+        "Resume rewrite, LinkedIn optimization",
+        "Job search strategy & coaching",
+        "Interview preparation",
+        "90-day job placement support",
+      ],
+      href: "https://store.y-axis.com/",
+      ctaText: "Start JSS Premium",
+      highlight: true,
+    },
+    {
+      id: "skills-cert",
+      name: "Skills Certification",
+      bullets: ["Pick role-aligned certs", "Exam prep roadmap", "Career signaling"],
+      href: "https://store.y-axis.com/",
+      ctaText: "Explore",
+      variant: "outline",
+    },
+    {
+      id: "visa-consult",
+      name: "Visa Consultation",
+      bullets: ["Best-fit pathway", "Country-wise options", "Timeline & eligibility"],
+      href: "https://store.y-axis.com/",
+      ctaText: "Book consult",
+      variant: "outline",
+    },
+  ];
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -564,10 +704,6 @@ export default function YTPHomePage() {
                 <p className="text-xs text-gray-600">Expert-Led Career Platform</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" className="hover-lift bg-transparent" aria-label="Sign in">
-              <User className="w-4 h-4 mr-2" />
-              Sign In
-            </Button>
           </div>
         </div>
       </header>
@@ -648,8 +784,8 @@ export default function YTPHomePage() {
                           phase === "uploading"
                             ? "Uploading your resume…"
                             : phase === "parsing"
-                            ? "Parsing your resume…"
-                            : "Finalizing…"
+                              ? "Parsing your resume…"
+                              : "Finalizing…"
                         }
                       />
                     )}
@@ -696,9 +832,17 @@ export default function YTPHomePage() {
                       ]}
                     />
                   </div>
+
+                  {/* ⬇️ Add here */}
+                  <div className="mt-8">
+                    <ConceptsExplainer />
+                  </div>
                 </CardContent>
               </Card>
             )}
+
+
+
 
             {/* ---------------- Expertise ---------------- */}
             {currentStep === "expertise" && (
@@ -773,184 +917,14 @@ export default function YTPHomePage() {
 
             {/* ---------------- Visa & Location ---------------- */}
             {currentStep === "visa-availability" && (
-              <Card className="mb-12 hover-lift animate-slide-up shadow-lg border-0">
-                <CardHeader className="text-center pb-8 pt-12">
-                  <CardTitle className="text-3xl text-balance mb-4 text-gray-900">
-                    Visa Status & Availability
-                  </CardTitle>
-                  <CardDescription className="text-lg text-gray-600 max-w-2xl mx-auto">
-                    Your work rights, location, and availability help us match you to the most suitable opportunities.
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="pb-12">
-                  <div className="space-y-6 max-w-2xl mx-auto">
-                    {/* Right to Work / Visa */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="has-visa" className="flex items-center">
-                          <Target className="w-4 h-4 mr-2" />
-                          Do you currently hold a valid visa?
-                        </Label>
-                        <Select
-                          value={visaData?.hasVisa ?? undefined}
-                          onValueChange={(v) => setVisaData((p: any) => ({ ...p, hasVisa: v }))}
-                        >
-                          <SelectTrigger id="has-visa" className="mt-1">
-                            <SelectValue placeholder="Select one" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Select “Yes” if you already hold a current visa for any country.
-                        </p>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="nationality" className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          Citizenship / Nationality
-                        </Label>
-                        <Input
-                          id="nationality"
-                          placeholder="e.g., Indian"
-                          className="mt-1"
-                          value={visaData?.nationality ?? ""}
-                          onChange={(e) => setVisaData((p: any) => ({ ...p, nationality: e.target.value }))}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          As shown on your passport.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Conditional visa details */}
-                    {visaData?.hasVisa === "yes" && (
-                      <div className="grid md:grid-cols-2 gap-6">
-                        <div>
-                          <Label htmlFor="visa-country" className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-2" />
-                            Visa issuing country
-                          </Label>
-                          <Input
-                            id="visa-country"
-                            placeholder="e.g., Australia"
-                            className="mt-1"
-                            value={visaData?.visaCountry ?? ""}
-                            onChange={(e) => setVisaData((p: any) => ({ ...p, visaCountry: e.target.value }))}
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Country that issued your current visa.
-                          </p>
-                        </div>
-
-                        <div>
-                          <Label htmlFor="visa-type" className="flex items-center">
-                            <Target className="w-4 h-4 mr-2" />
-                            Visa class / category
-                          </Label>
-                          <Input
-                            id="visa-type"
-                            placeholder="e.g., Subclass 482 (TSS), H-1B, Work Permit"
-                            className="mt-1"
-                            value={visaData?.visaType ?? ""}
-                            onChange={(e) => setVisaData((p: any) => ({ ...p, visaType: e.target.value }))}
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Provide the official visa name or subclass where applicable.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Location */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="current-location" className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          Current location
-                        </Label>
-                        <Input
-                          id="current-location"
-                          placeholder="City, State, Country (e.g., Sydney, NSW, Australia)"
-                          className="mt-1"
-                          value={visaData?.location ?? ""}
-                          onChange={(e) => setVisaData((p: any) => ({ ...p, location: e.target.value }))}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Your present city and country of residence.
-                        </p>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="preferred-country" className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          Preferred countries to work in
-                        </Label>
-                        <Input
-                          id="preferred-country"
-                          placeholder="e.g., Australia; Canada; USA"
-                          className="mt-1"
-                          value={visaData?.preferredCountries ?? ""}
-                          onChange={(e) => setVisaData((p: any) => ({ ...p, preferredCountries: e.target.value }))}
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Separate multiple countries with commas or semicolons.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Availability */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <Label htmlFor="availability" className="flex items-center">
-                          <Clock className="w-4 h-4 mr-2" />
-                          Earliest start / notice period
-                        </Label>
-                        <Select
-                          value={visaData?.availability ?? undefined}
-                          onValueChange={(v) => setVisaData((p: any) => ({ ...p, availability: v }))}
-                        >
-                          <SelectTrigger id="availability" className="mt-1">
-                            <SelectValue placeholder="Select availability" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="immediately">Immediate</SelectItem>
-                            <SelectItem value="2-weeks">2 weeks’ notice</SelectItem>
-                            <SelectItem value="1-month">1 month’s notice</SelectItem>
-                            <SelectItem value="2-months">2+ months’ notice</SelectItem>
-                            <SelectItem value="not-looking">Not currently seeking</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Tell us when you could commence a new role.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Why this matters */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-900 mb-2">Why this matters</h4>
-                      <p className="text-sm text-blue-800">
-                        Employers prioritise candidates with clear work rights, location fit, and start date. Accurate details improve matching and shorten time-to-hire.
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <Button variant="outline" className="bg-transparent" onClick={goBack}>
-                        <ChevronLeft className="w-4 h-4 mr-2" /> Back
-                      </Button>
-                      <Button size="lg" onClick={() => handleVisaComplete(visaData)} className="hover-lift">
-                        Continue to Profile <ChevronRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <VisaAvailabilitySection
+                value={visaData}
+                onChange={(next) => setVisaData(next)}
+                onBack={goBack}
+                onContinue={(data) => handleVisaComplete(data)}
+              />
             )}
+
 
             {/* ---------------- Profile 1 ---------------- */}
             {currentStep === "profile-1" && (
@@ -1076,198 +1050,37 @@ export default function YTPHomePage() {
               </div>
             )}
 
-            {/* ---------------- Y-Path ---------------- */}
-            {currentStep === "y-path" && (
-              <div className="space-y-8 animate-slide-up">
-                <Card className="shadow-lg border-0 hover-lift">
-                  <CardHeader className="text-center pb-8 pt-12">
-                    <CardTitle className="text-3xl text-balance mb-4 text-gray-900">Your Y-Path Journey</CardTitle>
-                    <CardDescription className="text-lg text-gray-600">
-                      Personalized roadmap to improve your competitiveness and achieve your career goals
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pb-12">
-                    <div className="grid md:grid-cols-3 gap-6 mb-8">
-                      <Card className="border-2 border-primary/20">
-                        <CardHeader><CardTitle className="text-lg text-primary">Immediate (0-3 months)</CardTitle></CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-start"><span className="text-green-500 mr-2">✓</span>Professional resume rewrite (+25 points)</li>
-                            <li className="flex items-start"><span className="text-green-500 mr-2">✓</span>LinkedIn optimization</li>
-                            <li className="flex items-start"><span className="text-green-500 mr-2">✓</span>Job search strategy (JSS)</li>
-                            <li className="flex items-start"><span className="text-green-500 mr-2">✓</span>Interview preparation</li>
-                          </ul>
-                        </CardContent>
-                      </Card>
 
-                      <Card>
-                        <CardHeader><CardTitle className="text-lg">Medium-term (3-12 months)</CardTitle></CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-start"><span className="text-blue-500 mr-2">○</span>Skills certification programs</li>
-                            <li className="flex items-start"><span className="text-blue-500 mr-2">○</span>Professional networking</li>
-                            <li className="flex items-start"><span className="text-blue-500 mr-2">○</span>Visa pathway consultation</li>
-                            <li className="flex items-start"><span className="text-blue-500 mr-2">○</span>Industry mentorship</li>
-                          </ul>
-                        </CardContent>
-                      </Card>
+            {( currentStep === "y-path") && (
+              <YPathReview
+                profile={{
+                  avatarLabel: "Avatar 1",
+                  title: "Senior Software Developer",
+                  experience: "6-10 years",
+                  visaStatus: "Work Visa",
+                  availability: "2 weeks notice",
+                }}
+                competitiveness={{
+                  oddsMeter: "35% vs Locals",
+                  giScore: "42/100",
+                  profileStrength: "Needs Enhancement",
+                  recommendedPath: "Career Services",
+                }}
+                yPath={{
+                  immediate: ["Resume rewrite (+25 points)", "LinkedIn optimization", "Job search strategy", "Interview prep"],
+                  medium: ["Skills certification", "Professional networking", "Visa pathway consultation", "Industry mentorship"],
+                  long: ["PR/citizenship pathway", "Leadership development", "Advanced certifications", "Career advancement"],
+                }}
+                suggestedServices={[
+                  { id: "resume", name: "Professional Resume Rewrite", bullets: ["ATS-optimized", "Role-targeted", "Expert editor"], ctaText: "Select" },
+                  { id: "linkedin", name: "LinkedIn Optimization", bullets: ["Headline & About", "SEO keywords", "Recruiter-ready"], ctaText: "Select", variant: "outline" },
+                  { id: "interview", name: "Interview Preparation", bullets: ["Mock interviews", "STAR method", "Feedback report"], ctaText: "Select" },
+                ]}
+                onSelectService={(id) => console.log("Selected service:", id)}
+                onBack={goBack}
+                onNext={goNext}
+              />
 
-                      <Card>
-                        <CardHeader><CardTitle className="text-lg">Long-term (1-3 years)</CardTitle></CardHeader>
-                        <CardContent>
-                          <ul className="space-y-2 text-sm">
-                            <li className="flex items-start"><span className="text-gray-400 mr-2">○</span>PR/citizenship pathway</li>
-                            <li className="flex items-start"><span className="text-gray-400 mr-2">○</span>Leadership development</li>
-                            <li className="flex items-start"><span className="text-gray-400 mr-2">○</span>Advanced certifications</li>
-                            <li className="flex items-start"><span className="text-gray-400 mr-2">○</span>Career advancement</li>
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    </div>
-
-                    <Card className="border-2 border-primary/20 bg-primary/5">
-                      <CardHeader><CardTitle className="text-primary">Recommended: Start with JSS Premium</CardTitle></CardHeader>
-                      <CardContent>
-                        <div className="grid md:grid-cols-2 gap-6">
-                          <div>
-                            <h4 className="font-semibold mb-2">What's included:</h4>
-                            <ul className="text-sm space-y-1">
-                              <li>• Professional resume rewrite</li>
-                              <li>• LinkedIn profile optimization</li>
-                              <li>• Job search strategy & coaching</li>
-                              <li>• Interview preparation</li>
-                              <li>• 90-day job placement support</li>
-                            </ul>
-                          </div>
-                          <div>
-                            <h4 className="font-semibold mb-2">Expected outcomes:</h4>
-                            <ul className="text-sm space-y-1">
-                              <li>• Odds Meter: 35% → 65%</li>
-                              <li>• 3x more interview calls</li>
-                              <li>• 40% faster job placement</li>
-                              <li>• 15-25% salary increase</li>
-                            </ul>
-                          </div>
-                        </div>
-                        <div className="flex gap-4 mt-6">
-                          <Button asChild className="flex-1">
-                            <a href="https://store.y-axis.com/" target="_blank" rel="noopener noreferrer">
-                              Start JSS Premium <ExternalLink className="w-4 h-4 ml-2" />
-                            </a>
-                          </Button>
-                          <Button variant="outline" onClick={handleYPathContinue} className="flex-1 bg-transparent">
-                            Continue to Review
-                          </Button>
-                        </div>
-                        <div className="mt-6 flex items-center justify-between">
-                          <Button variant="outline" className="bg-transparent" onClick={goBack}>
-                            <ChevronLeft className="w-4 h-4 mr-2" /> Back
-                          </Button>
-                          <Button variant="ghost" onClick={goNext}>
-                            Skip <ChevronRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* ---------------- Review ---------------- */}
-            {currentStep === "review" && (
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader className="text-center">
-                    <CardTitle className="flex items-center text-primary">
-                      <Target className="w-5 h-5 mr-2" /> Review Your Expert Profile
-                    </CardTitle>
-                    <CardDescription>Your comprehensive professional assessment is ready for expert review</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-lg flex items-center">
-                          <Star className="w-5 h-5 mr-2" /> Primary Expertise
-                        </h3>
-                        <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Avatar 1:</span>
-                            <span className="font-medium">Senior Software Developer</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Experience:</span>
-                            <span className="font-medium">6-10 years</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Visa Status:</span>
-                            <span className="font-medium">Work Visa</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Availability:</span>
-                            <span className="font-medium">2 weeks notice</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <h3 className="font-semibold text-lg flex items-center">
-                          <Target className="w-5 h-5 mr-2" /> Competitiveness Assessment
-                        </h3>
-                        <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Odds Meter:</span>
-                            <span className="font-medium text-destructive">35% vs Locals</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">GI Score:</span>
-                            <span className="font-medium text-destructive">42/100</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Profile Strength:</span>
-                            <span className="font-medium">Needs Enhancement</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Recommended Path:</span>
-                            <span className="font-medium text-primary">JSS Premium</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                      <h4 className="font-semibold text-primary mb-2">Your Y-Path Journey</h4>
-                      <div className="grid md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <strong>Immediate (0-3 months):</strong>
-                          <p>JSS Premium - Resume + Job Search Strategy</p>
-                        </div>
-                        <div>
-                          <strong>Medium-term (3-12 months):</strong>
-                          <p>Skills certification + Visa consultation</p>
-                        </div>
-                        <div>
-                          <strong>Long-term (1-3 years):</strong>
-                          <p>PR pathway + Career advancement</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-6 flex items-center justify-between">
-                      <Button variant="outline" className="bg-transparent" onClick={goBack}>
-                        <ChevronLeft className="w-4 h-4 mr-2" /> Back
-                      </Button>
-                      <Button
-                        size="lg"
-                        onClick={() => {
-                          setCompleted((p) => new Set(p).add("review" as StepId))
-                          setCurrentStep("success")
-                        }}
-                        className="w-full sm:w-auto"
-                      >
-                        Submit for Expert Review
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
             )}
 
             {/* ---------------- Success ---------------- */}
