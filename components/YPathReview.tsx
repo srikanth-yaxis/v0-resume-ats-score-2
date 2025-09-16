@@ -100,7 +100,7 @@ export default function YPathReview({
   onSelectService,
   showDetailedTimeline = true,
   jssHref = STORE_URL,
-  jssCtaText = "Start JSS Premium",
+  jssCtaText = "Get Free Consulation",
 }: Props) {
   const oddsPct = parsePercent(competitiveness.oddsMeter);
   const gi = parseInt0to100(competitiveness.giScore);
@@ -119,7 +119,7 @@ export default function YPathReview({
       bullets: [
         "Headline & About that rank in searches",
         "Keyword tuning for recruiter filters",
-        "Role-aligned achievements & projects",
+        "Role-aligned achievements",
       ],
       href: STORE_URL,
       ctaText: "Go to Store",
@@ -228,12 +228,36 @@ export default function YPathReview({
         </section>
 
         <Hr />
+        {/* =====================================================
+            5) DETAILED ROADMAP (Optional)
+        ====================================================== */}
+        {showDetailedTimeline && (
+          <>
+            <section className="space-y-4">
+              <h2 className="text-xl font-semibold">
+                {otherSuggested.length > 0 ? "2. Choose your Y-Path" : "2. Choose your Y-Path"}
+              </h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <YPathColumn
+                  title="Immediate (0-3 months)"
+                  items={yPath.immediate}
+                  colorClass="text-primary"
+                  bordered
+                  strongBorder
+                />
+                <YPathColumn title="Medium-term (3-12 months)" items={yPath.medium} />
+                <YPathColumn title="Long-term (1-3 years)" items={yPath.long} muted />
+              </div>
+            </section>
+          </>
+        )}
 
         {/* =====================================================
             2) RECOMMENDED: JSS PREMIUM
         ====================================================== */}
+         <Hr />
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">2. Recommended Next Step: JSS Premium</h2>
+          <h2 className="text-xl font-semibold">3. Recommended Next Step: JSS Premium (12 Weeks)</h2>
 
           <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-6">
             <div className="flex items-center gap-2 mb-3">
@@ -291,7 +315,7 @@ export default function YPathReview({
             3) ESSENTIAL ADD-ONS (fixed)
         ====================================================== */}
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">3. Essential Add-ons</h2>
+          <h2 className="text-xl font-semibold">4. Other Recommended Services</h2>
           <p className="text-sm text-muted-foreground">
             Make your profile market-ready with LinkedIn Optimization, Resume Writing, and Resume Marketing.
           </p>
@@ -324,30 +348,7 @@ export default function YPathReview({
           </>
         )} */}
 
-        {/* =====================================================
-            5) DETAILED ROADMAP (Optional)
-        ====================================================== */}
-        {showDetailedTimeline && (
-          <>
-            <Hr />
-            <section className="space-y-4">
-              <h2 className="text-xl font-semibold">
-                {otherSuggested.length > 0 ? "5. Detailed Roadmap" : "4. Detailed Roadmap"}
-              </h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <YPathColumn
-                  title="Immediate (0-3 months)"
-                  items={yPath.immediate}
-                  colorClass="text-primary"
-                  bordered
-                  strongBorder
-                />
-                <YPathColumn title="Medium-term (3-12 months)" items={yPath.medium} />
-                <YPathColumn title="Long-term (1-3 years)" items={yPath.long} muted />
-              </div>
-            </section>
-          </>
-        )}
+        
 
         {/* =====================================================
             Single CTA Row

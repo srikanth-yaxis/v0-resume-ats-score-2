@@ -15,6 +15,7 @@ interface ApiProfileData {
   "Last Name"?: string
   "Email or E-mail"?: string
   "Mobile Phone"?: string
+  "LinkedIn Profile"? : string
   Address?: string
   Skills?: string[]
   "Work Experiences"?: Array<{
@@ -130,6 +131,7 @@ export default function ProfileSection1({ onComplete, initialData, apiData }: Pr
       address: api["Address"] || "",
       profileSummary: api["Profile summary or career objective"] || "",
       skills: api["Skills"] || [],
+      linkedinUrl: api['LinkedIn Profile'] || "",
       workExperience:
         api["Work Experiences"]?.map((work) => ({
           company: work["Company Name"] || "",
@@ -190,7 +192,7 @@ export default function ProfileSection1({ onComplete, initialData, apiData }: Pr
       : initialData?.email || "",
     employmentStatus: initialData?.employmentStatus || "",
     landlinePhone: initialData?.landlinePhone || "",
-    linkedinUrl: initialData?.linkedinUrl || "",
+    linkedinUrl: apiData ? transformApiData(apiData).linkedinUrl || "" : initialData?.linkedinUrl || "",
     gender: initialData?.gender || "",
     nationality: initialData?.nationality || "",
     alternatePhone: initialData?.alternatePhone || "",

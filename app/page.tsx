@@ -306,7 +306,7 @@ function StepperSidebar({
         {/* header + tiny progress */}
         <div className="mb-3">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-gray-900">Journey</span>
+            <span className="font-semibold text-gray-900">YTP Journey</span>
             <span className="text-muted-foreground">
               {currentIdx + 1}/{steps.length}
             </span>
