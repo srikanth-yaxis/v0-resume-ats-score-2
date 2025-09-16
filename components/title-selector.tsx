@@ -23,7 +23,9 @@ export interface TitleSelectorProps {
     page?: number;
     placeholder?: string;
     className?: string;
+    value?: SelectedTitle | null;
     onChange?: (title: SelectedTitle | null) => void;
+    title?: string
 }
 
 const API_BASE = "https://emsiservices.com/titles/versions/latest/titles";
@@ -33,7 +35,9 @@ export default function TitleSelector({
     limit = 20,
     page = 1,
     placeholder = "Search job titles (e.g. Solution Architect)",
+    value,
     onChange,
+    title
 }: TitleSelectorProps) {
     const [query, setQuery] = useState("");
     const [open, setOpen] = useState(false);
@@ -45,9 +49,7 @@ export default function TitleSelector({
     const abortRef = useRef<AbortController | null>(null);
     const lastQueryRef = useRef<string | null>(null);
 
-    const [title, setTitle] = useState<string | null>("Software Engineer");
-
-    const token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNDNjZCRjIzMjBGNkY4RDQ2QzJERDhCMjI0MEVGMTFENTZEQkY3MUYiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJQR2FfSXlEMi1OUnNMZGl5SkE3eEhWYmI5eDgifQ.eyJuYmYiOjE3NTc5NDIwODMsImV4cCI6MTc1Nzk0NTY4MywiaXNzIjoiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20iLCJhdWQiOlsiZW1zaV9vcGVuIiwiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20vcmVzb3VyY2VzIl0sImNsaWVudF9pZCI6ImNlZXRveGR5YWxmOGZxNzUiLCJuYW1lIjoiUmFtZXNoIERlc2giLCJjb21wYW55IjoiRGVzaCIsImVtYWlsIjoicmFtZXNod2FyYW0xMkB5b3BtYWlsLmNvbSIsImlhdCI6MTc1Nzk0MjA4Mywic2NvcGUiOlsiZW1zaV9vcGVuIl19.AfT1XR-kWMIFIe590LUSxZ0VDmCaPnt_IsZ9CJSGaVrpeWjPGKV0QmSsQlzyjWYUmUQmKBqR7MwWOfvWkjHYZjSgTa-AZjB_wuQ59yXe1_bp9SQvsuivISy2ZXwiRK8MmFqOAVLoqJYJr2IlPqRNQIRIbcva904d2huAob1OHK4EDfELDdDRLamkhoQSlnyl5ERbDm7oNsm2HzTXykiRiiy0ORNFecRvA7W0KnYMuDctke52WV5Fr2GCe6CBim3WHnPoooa8IjywwKFchbqbOVZp4jcs0aSc78wH7aHnm81iVmWgiIxd9cbpgT8kDXfuLUunPn4q29MXFwiXsGhpXA"
+    const token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjNDNjZCRjIzMjBGNkY4RDQ2QzJERDhCMjI0MEVGMTFENTZEQkY3MUYiLCJ0eXAiOiJKV1QiLCJ4NXQiOiJQR2FfSXlEMi1OUnNMZGl5SkE3eEhWYmI5eDgifQ.eyJuYmYiOjE3NTc5OTg0NzksImV4cCI6MTc1ODAwMjA3OSwiaXNzIjoiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20iLCJhdWQiOlsiZW1zaV9vcGVuIiwiaHR0cHM6Ly9hdXRoLmVtc2ljbG91ZC5jb20vcmVzb3VyY2VzIl0sImNsaWVudF9pZCI6ImNlZXRveGR5YWxmOGZxNzUiLCJuYW1lIjoiUmFtZXNoIERlc2giLCJjb21wYW55IjoiRGVzaCIsImVtYWlsIjoicmFtZXNod2FyYW0xMkB5b3BtYWlsLmNvbSIsImlhdCI6MTc1Nzk5ODQ3OSwic2NvcGUiOlsiZW1zaV9vcGVuIl19.rXAqpW1zggK6a-AnRmR90L_ecbDOqMhY3EzBVYWfNhDhQkOpFUUqWt0iJcDN1S3fRPeuhH4JB-5FYeXbLDr38byklFnC90yIP-rxjw4p3C7YEAVwN9AGXkJJmnW4sMulUdrVpXIWIXt2CT_qC_QY-w-boieV31RvW3lrEstAunZrDQzoJ-udeaYkfYo9rHY2CsBNdK_6KwyJ2GE1yrN25U3jE0gB8ZH9J9x98llWTTEzrkh23rusvXWNUT5Gv8rA-SE8MZhYApAQY2BOpuProiLJ8TovNqvGjoooxFd2p3F_jZAHMRwdpGUvCkTENtK_Javv5c8vHJ5pSPi8FVQPdQ"
 
     const authHeader = useMemo(() => {
         if (!token) return "";
@@ -55,7 +57,8 @@ export default function TitleSelector({
     }, [token]);
 
     const debouncedQuery = useDebouncedValue(query.trim(), 350);
-    const showPrefilled = !!title && title.trim().length > 0;
+    const controlledSelected = value ?? selected;
+    const showPrefilled = !!controlledSelected;  
 
     const fetchTitles = useCallback(
         async (search: string) => {
@@ -143,9 +146,7 @@ export default function TitleSelector({
     );
 
     const removeTitle = useCallback(() => {
-        if (showPrefilled) {
-            setTitle(null);
-        }
+       
         setSelected(null);
         onChange?.(null);
         requestAnimationFrame(() => inputRef.current?.focus());
@@ -160,7 +161,7 @@ export default function TitleSelector({
                 onChange?.(updated);
             }
         },
-        [selected, onChange, showPrefilled, title],
+        [selected, onChange, title],
     );
 
     return (
@@ -241,7 +242,7 @@ export default function TitleSelector({
                                 id="industry"
                                 type="number"
                                 placeholder="Enter your preferred industry"
-                                className="block w-full rounded-lg border border-gray-300 p-2.5 focus:outline-none focus:ring-2 focus:ring-red-200"
+                                className="block rounded-lg border border-gray-300 p-2.5 focus:outline-none focus:ring-2 focus:ring-red-200"
                             />
                         </div>
                     </div>

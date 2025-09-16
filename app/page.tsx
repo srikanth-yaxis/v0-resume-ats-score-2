@@ -373,6 +373,8 @@ export default function YTPHomePage() {
   const [currentStep, setCurrentStep] = useState<StepId>("upload")
   const [completed, setCompleted] = useState<Set<StepId>>(new Set())
   const [skills, setSkills] = useState([])
+  const [title, setTitle] = useState("")
+
 
   const [expertiseData, setExpertiseData] = useState<any>({
     avatar1: { role: "", experience: "", skills: [] },
@@ -470,8 +472,10 @@ export default function YTPHomePage() {
       if (xhr.status >= 200 && xhr.status < 300) {
         const json = JSON.parse(xhr.responseText);
         console.log(typeof (json), typeof (skills));
-        setSkills(json.results.nova.Skills)
-        console.log("✅ Response:", json.results.nova.Skills);
+        setSkills(json?.results?.nova?.Skills)
+        setTitle(json?.results?.nova?.["Work Experiences"]?.[0]?.["Job Title"])
+        // console.log("✅ Response:", json.results.nova.Skills, json?.results?.nova?.["Work Experiences"]?.[0]?.["Job Title"]);
+        // console.log(title, skills);
       } else {
         console.error("❌ Request failed:", xhr.status, xhr.statusText);
       }
@@ -849,9 +853,9 @@ export default function YTPHomePage() {
                       <div className="grid gap-4">
                         <div>
                           <TitleSelector
-                            onChange={(titles) => {
-                              console.log("Selected titles:", titles);
-                            }}
+                            value={title ? { id: "prefilled", name: title } : null}
+                            onChange={(sel) => setTitle(sel?.name ?? "")}
+                            title={title}
                           />
                         </div>
                       </div>
@@ -1110,7 +1114,7 @@ export default function YTPHomePage() {
             )}
 
 
-            {( currentStep === "y-path") && (
+            {(currentStep === "y-path") && (
               <YPathReview
                 profile={{
                   avatarLabel: "Avatar 1",
