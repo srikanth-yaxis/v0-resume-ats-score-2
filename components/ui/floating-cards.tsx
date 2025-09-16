@@ -62,7 +62,7 @@ const FloatingCards = ({ autoplay = true, pauseOnHover = true, content: propCont
   }, [autoplay, isHovered, content.length]);
 
   return (
-    <div className="relative w-full h-[300px] overflow-hidden  rounded-2xl">
+    <div className="relative w-full h-[150px] overflow-hidden  rounded-2xl">
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <AnimatePresence mode="wait">
           <motion.div
@@ -73,20 +73,20 @@ const FloatingCards = ({ autoplay = true, pauseOnHover = true, content: propCont
             transition={{ duration: 0.6, ease: "easeInOut" }}
             onMouseEnter={() => pauseOnHover && setIsHovered(true)}
             onMouseLeave={() => pauseOnHover && setIsHovered(false)}
-            className="max-w-md w-full"
+            className=" w-4/5"
           >
-            <div className=" backdrop-blur-sm rounded-xl p-8  border border-white/20">
+            <div className=" backdrop-blur-sm rounded-xl   border border-white/20">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-                className="text-center space-y-4"
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="text-center space-y-2"
               >
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  <h3 className="text font-bold text-gray-900 mb-3">
                     {content[currentIndex].title}
                   </h3>
-                  <span className="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-sm font-medium px-4 py-2 rounded-full">
+                  <span className="inline-block bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-medium px-4 py-1 rounded-full">
                     {content[currentIndex].subtitle}
                   </span>
                 </div>
@@ -94,7 +94,7 @@ const FloatingCards = ({ autoplay = true, pauseOnHover = true, content: propCont
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.4, duration: 0.4 }}
-                  className="text-gray-700 leading-relaxed text-sm"
+                  className="text-gray-700 leading-relaxed text-xs"
                 >
                   {content[currentIndex].description}
                 </motion.p>
@@ -105,13 +105,13 @@ const FloatingCards = ({ autoplay = true, pauseOnHover = true, content: propCont
       </div>
 
       {/* Progress dots */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {content.map((_, index) => (
           <motion.button
             key={index}
             onClick={() => setCurrentIndex(index)}
-            className={`w-3 h-3 rounded-full transition-colors ${
-              index === currentIndex ? 'bg-blue-600' : 'bg-white/50'
+            className={`w-2 h-2 rounded-full transition-colors ${
+              index === currentIndex ? 'bg-blue-600' : 'bg-gray-300'
             }`}
             whileHover={{ scale: 1.2 }}
             whileTap={{ scale: 0.9 }}

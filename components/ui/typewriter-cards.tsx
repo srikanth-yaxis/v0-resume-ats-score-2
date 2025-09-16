@@ -85,12 +85,12 @@ const TypewriterCards = ({ autoplay = true, pauseOnHover = true, content: propCo
   }, [currentIndex, isTyping, content]);
 
   return (
-    <div className="relative w-full h-[300px]  rounded-2xl overflow-hidden">
+    <div className="relative w-full h-[150px]  rounded-2xl overflow-hidden">
       {/* Animated background */}
       
-      <div className="relative z-10 flex items-center justify-center h-full p-4">
+      <div className="relative z-10 flex items-center justify-center h-full p-2">
         <div 
-          className="max-w-2xl w-full"
+          className="w-5/6"
           onMouseEnter={() => pauseOnHover && setIsHovered(true)}
           onMouseLeave={() => pauseOnHover && setIsHovered(false)}
         >
@@ -105,24 +105,18 @@ const TypewriterCards = ({ autoplay = true, pauseOnHover = true, content: propCo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.4 }}
-              className="text-xl font-bold  mb-4"
+              className="text-xl font-bold  mb-4 flex items-center gap-3"
             >
-              {content[currentIndex].title}
-            </motion.h3>
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className="mb-6"
-            >
-              <span className="inline-block bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-sm font-bold px-4 py-2">
+              <p>{content[currentIndex].title} </p>
+              <span className="inline-block bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-bold px-4 py-1 rounded-full">
                 {content[currentIndex].subtitle}
               </span>
-            </motion.div>
+            </motion.h3>
+            
+            
 
-            <div className="min-h-[120px]">
-              <p className="text-gray-900 text-sm leading-relaxed font-mono">
+            <div className="">
+              <p className="text-gray-900 text-sm leading-relaxed">
                 {displayedText}
                 {isTyping && (
                   <motion.span
