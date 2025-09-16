@@ -80,7 +80,7 @@ const steps = [
   { id: "visa-availability", label: "Visa & Location" },
   { id: "profile", label: "Profile" },
   // { id: "profile-2", label: "Profile" },
-  { id: "odds-meter", label: "Assessment" },
+  // { id: "odds-meter", label: "Assessment" },
   { id: "y-path", label: "Y-Path" },
   { id: "success", label: "Success" },
 ] as const
@@ -398,6 +398,9 @@ export default function YTPHomePage() {
   const [displayPct, setDisplayPct] = useState(0) // weighted % we show
   const [parsedResume, setParsedResume] = useState<any>(null)
 
+  // NEW: single ref that controls the hidden input (prevents double file picker)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
   const currentIdx = steps.findIndex((s) => s.id === currentStep)
   const canGoBack = currentIdx > 0 && currentStep !== "success"
 
@@ -466,7 +469,6 @@ export default function YTPHomePage() {
 
     const xhr = new XMLHttpRequest()
     xhr.open("POST", PARSE_ENDPOINT, true)
-
 
     xhr.onload = function () {
       if (xhr.status >= 200 && xhr.status < 300) {
@@ -554,6 +556,8 @@ export default function YTPHomePage() {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files && files.length > 0) handleFileUpload(files[0])
+    // reset the value so selecting the same file twice still triggers onChange
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   /* Stage Complete Callbacks */
@@ -573,11 +577,8 @@ export default function YTPHomePage() {
   //   setProfileData((prev: any) => ({ ...prev, section2: data }))
   //   markCompleteAndNext("profile-2")
   // }
-  const handleOddsMeterContinue = () => markCompleteAndNext("odds-meter")
+  // const handleOddsMeterContinue = () => markCompleteAndNext("odds-meter")
   const handleYPathContinue = () => markCompleteAndNext("y-path")
-
-
-
 
   // Example data mapping from your state
   const profile: ProfileSummary = {
@@ -649,6 +650,29 @@ export default function YTPHomePage() {
   ];
   return (
     <div className="min-h-screen bg-white">
+         {/* Floating WhatsApp Icon */}
+      <a
+        href={`https://api.whatsapp.com/send/?phone=918802219999&text=Hi! can you help with YTP&type=phone_number&app_absent=0`}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          zIndex: 1000,
+          width: '40px',
+          height: '40px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <img
+          src="https://uat.y-axis.com/assets/cms/2024-11/Whatsapp-icon.webp"
+          alt="Chat on WhatsApp"
+          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+        />
+      </a>
       {/* Header */}
       <header className="border-b bg-white shadow-sm sticky top-0 z-50">
         <div className="container mx-auto p-2">
@@ -682,6 +706,16 @@ export default function YTPHomePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pb-3">
+
+                  {/* Hidden input controlled by ref (single source of truth) */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    onChange={handleFileSelect}
+                    className="sr-only"
+                  />
+
                   <div
                     role="button"
                     tabIndex={0}
@@ -697,11 +731,12 @@ export default function YTPHomePage() {
                       setIsDragOver(true)
                     }}
                     onDragLeave={() => setIsDragOver(false)}
-                    onClick={() => document.getElementById("resume-upload")?.click()}
+                    // Use the ref (no document.getElementById) to open picker
+                    onClick={() => fileInputRef.current?.click()}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault()
-                        document.getElementById("resume-upload")?.click()
+                        fileInputRef.current?.click()
                       }
                     }}
                   >
@@ -710,16 +745,19 @@ export default function YTPHomePage() {
                         <Upload className="w-8 h-8 mx-auto mb-4 text-gray-400" />
                         <h3 className="text-lg font-semibold mb-1 text-gray-900">Drop your resume here</h3>
                         <p className="text-gray-600 mb-4 text-sm">or click to browse files</p>
-                        <input
-                          type="file"
-                          accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                          onChange={handleFileSelect}
-                          className="hidden"
-                          id="resume-upload"
-                        />
-                        <Button size="sm" className="hover-lift" asChild>
-                          <label htmlFor="resume-upload" className="cursor-pointer">Choose File</label>
+
+                        {/* Button triggers input via ref and prevents bubbling to dropzone */}
+                        <Button
+                          size="sm"
+                          className="hover-lift"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          Choose File
                         </Button>
+
                         <p className="text-xs text-gray-500 mt-3">PDF & DOC/DOCX only, max 10MB</p>
                         {uploadedFile && phase === "idle" && (
                           <p className="mt-3 text-xs text-gray-700">
@@ -775,9 +813,6 @@ export default function YTPHomePage() {
                 </CardContent>
               </Card>
             )}
-
-
-
 
             {/* ---------------- Expertise ---------------- */}
             {currentStep === "expertise" && (
@@ -978,7 +1013,6 @@ export default function YTPHomePage() {
               />
             )}
 
-
             {/* ---------------- Profile 1 ---------------- */}
             {currentStep === "profile" && (
               <div className="animate-slide-up">
@@ -1010,29 +1044,8 @@ export default function YTPHomePage() {
               </div>
             )}
 
-            {/* ---------------- Profile 2 ---------------- */}
-            {/* {currentStep === "profile-2" && (
-              <div className="animate-slide-up">
-                <div className="text-center mb-10">
-                  <h2 className="text-3xl font-bold text-balance mb-4 text-gray-900">Complete Your Profile</h2>
-                  <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-                    Section 2: Preferences, Licenses, Languages, References & Sponsor Details
-                  </p>
-                </div>
-                <ProfileSection2 onComplete={handleProfileSection2Complete} />
-                <div className="mt-6 flex items-center justify-between">
-                  <Button variant="outline" className="bg-transparent" onClick={goBack}>
-                    <ChevronLeft className="w-4 h-4 mr-2" /> Back
-                  </Button>
-                  <Button variant="ghost" onClick={goNext}>
-                    Skip <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            )} */}
-
             {/* ---------------- Odds Meter ---------------- */}
-            {currentStep === "odds-meter" && (
+            {/* {currentStep === "odds-meter" && (
               <div className="space-y-8 animate-slide-up">
                 <Card className="shadow-lg border-0 hover-lift">
                   <CardHeader className="text-center pb-8 pt-12">
@@ -1045,7 +1058,7 @@ export default function YTPHomePage() {
                   </CardHeader>
                   <CardContent className="text-center pb-12">
                     <div className="grid md:grid-cols-2 gap-8 mb-8">
-                      {/* Odds Meter */}
+                     
                       <div>
                         <h3 className="text-xl font-semibold mb-4">Odds Meter</h3>
                         <div className="relative w-32 h-32 mx-auto mb-4">
@@ -1063,7 +1076,7 @@ export default function YTPHomePage() {
                         <p className="text-sm text-gray-600">Competitiveness against local candidates</p>
                       </div>
 
-                      {/* GI Score */}
+                     
                       <div>
                         <h3 className="text-xl font-semibold mb-4">Global Indian Score</h3>
                         <div className="relative w-32 h-32 mx-auto mb-4">
@@ -1111,8 +1124,7 @@ export default function YTPHomePage() {
                   </CardContent>
                 </Card>
               </div>
-            )}
-
+            )} */}
 
             {(currentStep === "y-path") && (
               <YPathReview

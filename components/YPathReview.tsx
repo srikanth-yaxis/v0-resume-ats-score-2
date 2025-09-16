@@ -4,7 +4,6 @@ import {
   Card, CardContent, CardDescription, CardHeader, CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   ChevronLeft,
   ChevronRight,
@@ -46,7 +45,7 @@ export type ProductSuggestion = {
   id: string;
   name: string;
   bullets: string[];
-  href?: string;          // If present, we render an <a> CTA
+  href?: string;          // CTA link (forced to store for “Other Suggested”)
   ctaText?: string;       // Button text
   variant?: "primary" | "outline";
   highlight?: boolean;    // Visual emphasis
@@ -55,28 +54,40 @@ export type ProductSuggestion = {
 type Props = {
   className?: string;
 
-  // Top: Profile > Competitiveness > Snapshot
   profile: ProfileSummary;
   competitiveness: Competitiveness;
   yPath: YPathBuckets;
 
-  // Individual product suggestions rendered as lined-up cards (BOTTOM of page)
+  // Any extra services to show under "Other Suggested Services"
   suggestedServices?: ProductSuggestion[];
 
-  // Actions (single flow)
   onBack: () => void;
   onNext: () => void;
 
-  // Optional per-service select handler (if no href)
+  // Optional (kept for compatibility)
   onSelectService?: (productId: string) => void;
 
-  // Optional: show the 3-column detailed timeline
   showDetailedTimeline?: boolean;
 
-  // Optional override for JSS Premium CTA
+  // JSS Premium CTA
   jssHref?: string;
   jssCtaText?: string;
 };
+
+const STORE_URL = "https://store.y-axis.com/";
+
+// IDs/names we treat as “Essential Add-ons”
+const ESSENTIAL_IDS = new Set([
+  "linkedin-optimization",
+  "resume-writing",
+  "resume-marketing",
+]);
+
+const ESSENTIAL_NAMES = [
+  /linkedin\s*optimization/i,
+  /professional\s*resume\s*writing/i,
+  /resume\s*marketing/i,
+];
 
 export default function YPathReview({
   className,
@@ -88,34 +99,80 @@ export default function YPathReview({
   onNext,
   onSelectService,
   showDetailedTimeline = true,
-  jssHref = "https://store.y-axis.com/",
+  jssHref = STORE_URL,
   jssCtaText = "Start JSS Premium",
 }: Props) {
-  // -------- parse numbers from strings for infographics & logic --------
-  const oddsPct = parsePercent(competitiveness.oddsMeter); // 0..100 | undefined
-  const gi = parseInt0to100(competitiveness.giScore);      // 0..100 | undefined
+  const oddsPct = parsePercent(competitiveness.oddsMeter);
+  const gi = parseInt0to100(competitiveness.giScore);
 
-  // Reasons for JSS Premium based on the signals we have
   const jssReasons = buildJssReasons({
     oddsPct,
     gi,
     profileStrength: competitiveness.profileStrength,
   });
 
+  // ----- Essential Add-ons (fixed three) -----
+  const essentialAddOns: ProductSuggestion[] = [
+    {
+      id: "linkedin-optimization",
+      name: "LinkedIn Optimization",
+      bullets: [
+        "Headline & About that rank in searches",
+        "Keyword tuning for recruiter filters",
+        "Role-aligned achievements & projects",
+      ],
+      href: STORE_URL,
+      ctaText: "Go to Store",
+      highlight: true,
+    },
+    {
+      id: "resume-writing",
+      name: "Professional Resume Writing",
+      bullets: [
+        "ATS-optimized formatting and keywords",
+        "Impact-focused bullet rewrites",
+        "Modern, recruiter-friendly templates",
+      ],
+      href: STORE_URL,
+      ctaText: "Go to Store",
+    },
+    {
+      id: "resume-marketing",
+      name: "Resume Marketing",
+      bullets: [
+        "Targeted outreach to relevant job posts",
+        "Tracker & weekly progress updates",
+        "Application strategy & follow-ups",
+      ],
+      href: STORE_URL,
+      ctaText: "Go to Store",
+    },
+  ];
+
+  // ----- Other Suggested (from props), minus JSS & Essentials, all CTAs forced to Store -----
+  const otherSuggested = (suggestedServices || [])
+    .filter((svc) => !/jss\s*premium/i.test(svc.name)) // exclude JSS Premium duplicate
+    .filter((svc) => !ESSENTIAL_IDS.has(svc.id) && !ESSENTIAL_NAMES.some((rx) => rx.test(svc.name)))
+    .map((svc) => ({
+      ...svc,
+      href: STORE_URL,
+      ctaText: svc.ctaText || "Go to Store",
+    }));
+
   return (
     <Card className={clsx("shadow-lg border-0 hover-lift", className)} role="region" aria-label="Review and Y-Path">
       <CardHeader className="text-center pb-6 pt-10">
         <CardTitle className="text-3xl text-balance mb-3 text-gray-900">
-          Review & Y-Path
+          Review Your Y-Path
         </CardTitle>
         <CardDescription className="text-lg text-gray-600">
-          Your profile overview, scores, and the recommended next step — all in one flow.
+          Your profile overview, scores, and the recommended next steps — all in one flow.
         </CardDescription>
       </CardHeader>
 
       <CardContent className="pb-10">
         {/* =====================================================
-            1) PROFILE & SCORES (with infographics)
+            1) PROFILE & SCORES
         ====================================================== */}
         <section className="space-y-6">
           <h2 className="text-xl font-semibold">1. Your Profile & Scores</h2>
@@ -141,7 +198,6 @@ export default function YPathReview({
                 <Target className="w-5 h-5 mr-2" /> Competitiveness Assessment
               </h3>
 
-              {/* Info graphics row */}
               <div className="grid grid-cols-2 gap-4">
                 <ScoreDonut
                   label="Odds vs Locals"
@@ -161,7 +217,6 @@ export default function YPathReview({
                 />
               </div>
 
-              {/* Textual rollup */}
               <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                 <Row label="Odds Meter:" value={competitiveness.oddsMeter ?? "—"} valueClass="text-destructive" />
                 <Row label="GI Score:" value={competitiveness.giScore ?? "—"} valueClass="text-destructive" />
@@ -170,39 +225,16 @@ export default function YPathReview({
               </div>
             </div>
           </div>
- {/* =====================================================
-            3) (Optional) Detailed Roadmap
-        ====================================================== */}
-        {showDetailedTimeline && (
-          <>
-            <Hr />
-            <section className="space-y-4">
-              <h2 className="text-xl font-semibold">3. Detailed Roadmap</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <YPathColumn
-                  title="Immediate (0-3 months)"
-                  items={yPath.immediate}
-                  colorClass="text-primary"
-                  bordered
-                  strongBorder
-                />
-                <YPathColumn title="Medium-term (3-12 months)" items={yPath.medium} />
-                <YPathColumn title="Long-term (1-3 years)" items={yPath.long} muted />
-              </div>
-            </section>
-          </>
-        )}
         </section>
 
         <Hr />
 
         {/* =====================================================
-            2) RECOMMENDED: JSS PREMIUM (primary callout)
+            2) RECOMMENDED: JSS PREMIUM
         ====================================================== */}
         <section className="space-y-4">
           <h2 className="text-xl font-semibold">2. Recommended Next Step: JSS Premium</h2>
 
-          {/* Why JSS Premium for you */}
           <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-6">
             <div className="flex items-center gap-2 mb-3">
               <Info className="w-4 h-4 text-primary" />
@@ -218,7 +250,6 @@ export default function YPathReview({
               ))}
             </ul>
 
-            {/* What it includes / expected outcomes */}
             <div className="grid md:grid-cols-2 gap-6 mt-6">
               <div>
                 <h4 className="font-semibold mb-2">What you get:</h4>
@@ -244,73 +275,75 @@ export default function YPathReview({
               </div>
             </div>
 
-            {/* CTA row */}
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <Button asChild className="flex-1">
                 <a href={jssHref} target="_blank" rel="noopener noreferrer">
                   {jssCtaText} <ExternalLink className="w-4 h-4 ml-2" />
                 </a>
               </Button>
-              {/* <Button variant="outline" className="flex-1 bg-transparent" onClick={() => onSelectService?.("jss-premium")}>
-                Add to my plan
-              </Button> */}
             </div>
           </div>
         </section>
 
-       
+        <Hr />
 
         {/* =====================================================
-            4) OTHER SUGGESTED SERVICES (BOTTOM)
+            3) ESSENTIAL ADD-ONS (fixed)
         ====================================================== */}
-        {suggestedServices.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold">3. Essential Add-ons</h2>
+          <p className="text-sm text-muted-foreground">
+            Make your profile market-ready with LinkedIn Optimization, Resume Writing, and Resume Marketing.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {essentialAddOns.map((svc) => (
+              <ServiceCard key={svc.id} svc={svc} forceStore />
+            ))}
+          </div>
+        </section>
+
+        {/* =====================================================
+            4) OTHER SUGGESTED SERVICES (from props)
+        ====================================================== */}
+        {/* {otherSuggested.length > 0 && (
           <>
             <Hr />
             <section className="space-y-4">
               <h2 className="text-xl font-semibold">4. Other Suggested Services</h2>
               <p className="text-sm text-muted-foreground">
-                Complement JSS Premium with role-aligned add-ons. Select what you need now or revisit later.
+                Complement your plan with add-ons curated for your profile.
               </p>
 
-              {/* If the parent accidentally included JSS here, we'll quietly hide it to avoid duplication */}
               <div className="grid md:grid-cols-3 gap-6">
-                {suggestedServices
-                  .filter((svc) => !/jss\s*premium/i.test(svc.name))
-                  .map((svc) => (
-                    <Card
-                      key={svc.id}
-                      className={clsx("h-full", svc.highlight && "border-2 border-primary/30")}
-                      aria-label={`Service: ${svc.name}`}
-                    >
-                      <CardHeader>
-                        <CardTitle className={clsx("text-lg", svc.highlight && "text-primary")}>
-                          {svc.name}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex flex-col h-full">
-                        <ul className="text-sm space-y-1">
-                          {svc.bullets.map((b, i) => <li key={i}>• {b}</li>)}
-                        </ul>
-                        <div className="mt-4">
-                          {svc.href ? (
-                            <Button asChild className="w-full">
-                              <a href={svc.href} target="_blank" rel="noopener noreferrer">
-                                {svc.ctaText ?? "Learn more"} <ExternalLink className="w-4 h-4 ml-2" />
-                              </a>
-                            </Button>
-                          ) : (
-                            <Button
-                              variant={svc.variant === "outline" ? "outline" : "default"}
-                              className="w-full"
-                              onClick={() => onSelectService?.(svc.id)}
-                            >
-                              {svc.ctaText ?? "Select"}
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                {otherSuggested.map((svc) => (
+                  <ServiceCard key={svc.id} svc={svc} forceStore />
+                ))}
+              </div>
+            </section>
+          </>
+        )} */}
+
+        {/* =====================================================
+            5) DETAILED ROADMAP (Optional)
+        ====================================================== */}
+        {showDetailedTimeline && (
+          <>
+            <Hr />
+            <section className="space-y-4">
+              <h2 className="text-xl font-semibold">
+                {otherSuggested.length > 0 ? "5. Detailed Roadmap" : "4. Detailed Roadmap"}
+              </h2>
+              <div className="grid md:grid-cols-3 gap-6">
+                <YPathColumn
+                  title="Immediate (0-3 months)"
+                  items={yPath.immediate}
+                  colorClass="text-primary"
+                  bordered
+                  strongBorder
+                />
+                <YPathColumn title="Medium-term (3-12 months)" items={yPath.medium} />
+                <YPathColumn title="Long-term (1-3 years)" items={yPath.long} muted />
               </div>
             </section>
           </>
@@ -332,11 +365,43 @@ export default function YPathReview({
   );
 }
 
-/* ---------- helpers ---------- */
+/* ---------- small components ---------- */
+
+function ServiceCard({ svc, forceStore }: { svc: ProductSuggestion; forceStore?: boolean }) {
+  const href = STORE_URL; // force to store as requested
+  const cta = svc.ctaText || "Go to Store";
+  return (
+    <Card className={clsx("h-full", svc.highlight && "border-2 border-primary/30")} aria-label={`Service: ${svc.name}`}>
+      <CardHeader>
+        <CardTitle className={clsx("text-lg", svc.highlight && "text-primary")}>{svc.name}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col h-full">
+        <ul className="text-sm space-y-1">
+          {svc.bullets.map((b, i) => (
+            <li key={i}>• {b}</li>
+          ))}
+        </ul>
+        <div className="mt-4">
+          <Button asChild className="w-full">
+            <a href={href} target="_blank" rel="noopener noreferrer">
+              {cta} <ExternalLink className="w-4 h-4 ml-2" />
+            </a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 function Row({
-  label, value, valueClass,
-}: { label: string; value?: string; valueClass?: string }) {
+  label,
+  value,
+  valueClass,
+}: {
+  label: string;
+  value?: string;
+  valueClass?: string;
+}) {
   return (
     <div className="flex justify-between">
       <span className="text-muted-foreground">{label}</span>
@@ -345,17 +410,13 @@ function Row({
   );
 }
 
-function SnapshotBlock({ heading, value }: { heading: string; value?: string }) {
-  return (
-    <div>
-      <strong>{heading}:</strong>
-      <p>{value ?? "—"}</p>
-    </div>
-  );
-}
-
 function YPathColumn({
-  title, items, colorClass, bordered, strongBorder, muted,
+  title,
+  items,
+  colorClass,
+  bordered,
+  strongBorder,
+  muted,
 }: {
   title: string;
   items: string[];
@@ -365,10 +426,7 @@ function YPathColumn({
   muted?: boolean;
 }) {
   return (
-    <Card className={clsx(
-      bordered && "border-2",
-      strongBorder && "border-primary/20",
-    )}>
+    <Card className={clsx(bordered && "border-2", strongBorder && "border-primary/20")}>
       <CardHeader>
         <CardTitle className={clsx("text-lg", colorClass)}>{title}</CardTitle>
       </CardHeader>
@@ -377,10 +435,12 @@ function YPathColumn({
           <ul className="space-y-2 text-sm">
             {items.map((text, i) => (
               <li key={i} className="flex items-start">
-                <span className={clsx(
-                  "mr-2",
-                  muted ? "text-gray-400" : colorClass ? "text-blue-500" : "text-blue-500"
-                )}>
+                <span
+                  className={clsx(
+                    "mr-2",
+                    muted ? "text-gray-400" : colorClass ? "text-blue-500" : "text-blue-500"
+                  )}
+                >
                   {muted ? "○" : i < 4 ? (colorClass ? "✓" : "○") : "○"}
                 </span>
                 {text}
@@ -439,7 +499,9 @@ function ScoreDonut({
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center leading-tight">
-            <div className="text-2xl font-bold" style={{ color }}>{Math.round(value)}</div>
+            <div className="text-2xl font-bold" style={{ color }}>
+              {Math.round(value)}
+            </div>
             <div className="text-[10px] text-gray-500">{suffix || ""}</div>
           </div>
         </div>
@@ -482,31 +544,33 @@ function buildJssReasons({
   const reasons: string[] = [];
 
   if (typeof gi === "number") {
-    if (gi < 60) reasons.push(`GI Score is ${gi}/100 — below the competitive threshold; structured profile uplift is recommended.`);
+    if (gi < 60)
+      reasons.push(
+        `GI Score is ${gi}/100 — below the competitive threshold; structured profile uplift is recommended.`
+      );
     else reasons.push(`GI Score is ${gi}/100 — targeted improvements can still boost recruiter conversions.`);
   } else {
     reasons.push("Your GI Score indicates room for improvement with profile positioning and market alignment.");
   }
 
   if (typeof oddsPct === "number") {
-    if (oddsPct < 50) reasons.push(`Odds vs locals is ${oddsPct}% — resume + LinkedIn optimization typically increases shortlist rates.`);
+    if (oddsPct < 50)
+      reasons.push(
+        `Odds vs locals is ${oddsPct}% — resume + LinkedIn optimization typically increases shortlist rates.`
+      );
     else reasons.push(`Odds vs locals is ${oddsPct}% — polishing narrative and achievements can push you higher.`);
   } else {
     reasons.push("Improving resume/LinkedIn clarity and keyword coverage typically increases interview call rates.");
   }
 
   if (/need/i.test(profileStrength || "")) {
-    reasons.push("Profile Strength shows “Needs Enhancement” — JSS addresses content gaps, structure, and market signaling.");
+    reasons.push(
+      "Profile Strength shows “Needs Enhancement” — JSS addresses content gaps, structure, and market signaling."
+    );
   } else if (profileStrength) {
     reasons.push(`Profile Strength: ${profileStrength} — JSS fine-tunes for stronger recruiter relevance.`);
   }
 
   reasons.push("JSS combines expert editing + coaching, so changes translate into measurable outcomes during applications.");
   return reasons;
-}
-
-/* ---------- small helpers ---------- */
-function firstLine(list: string[]) {
-  if (!list?.length) return "—";
-  return list[0];
 }
